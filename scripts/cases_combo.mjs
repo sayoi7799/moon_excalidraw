@@ -3,7 +3,9 @@
 // description into bound shapes, labels and arrows. "handmade/" scenes are
 // written out by hand, and "random/" scenes are seeded random mixes of every
 // element type. None of them is drawn with the mouse.
-import { rng } from "./mbt.mjs";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { rng, root } from "./mbt.mjs";
 import { loadOfficial } from "./official_env.mjs";
 import { base, doc } from "./cases_single.mjs";
 import { textEl } from "./cases_text.mjs";
@@ -208,6 +210,12 @@ export async function comboScenes() {
       } else elements.push({ ...base, ...common, type: kind, width: pick([60, 120, 40]), height: pick([40, 90, 20]), roundness: kind === "ellipse" ? null : common.roundness });
     }
     handmade(`random/${s}`, elements);
+  }
+  // Scenes drawn in the real editor, kept as the files the editor wrote.
+  const dir = join(root, "fixtures", "scenes");
+  for (const file of readdirSync(dir).filter((f) => f.endsWith(".excalidraw")).sort()) {
+    const raw = readFileSync(join(dir, file), "utf8");
+    cases.push({ name: `real/${file}`, scene: JSON.parse(raw), raw });
   }
   return cases;
 }
