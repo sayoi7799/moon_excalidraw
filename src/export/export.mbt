@@ -10,19 +10,19 @@ pub(all) enum FontMode {
   Url
   /// No fonts, like the official `skipInliningFonts`.
   None
-} derive(Eq, Show, Debug)
+} derive(Eq, Debug)
 
 ///|
 pub(all) enum UnsupportedPolicy {
   Error
   SkipWithWarning
-} derive(Eq, Show, Debug)
+} derive(Eq, Debug)
 
 ///|
 pub(all) struct Warning {
   element_id : String?
   message : String
-} derive(Eq, Show, Debug)
+} derive(Eq, Debug)
 
 ///|
 pub(all) struct ExportResult {
@@ -34,7 +34,15 @@ pub(all) struct ExportResult {
 pub suberror ExportError {
   /// An element of this id can't be drawn, and the policy says to fail.
   Unsupported(String, String)
-} derive(Show)
+} derive(Debug)
+
+///|
+pub impl Show for ExportError with fn output(self, logger) {
+  match self {
+    Unsupported(id, reason) =>
+      logger.write_string("element \"\{id}\": \{reason}")
+  }
+}
 
 ///|
 /// Why this library doesn't draw an element, if it doesn't.
@@ -55,7 +63,7 @@ fn check_elements(
   warnings : Array[Warning],
 ) -> Array[@model.Element] raise ExportError {
   let kept = []
-  let seen = {}
+  let seen : Map[String, Bool] = Map([])
   for e in elements {
     match unsupported_reason(e) {
       Some(reason) => {
@@ -88,7 +96,7 @@ fn check_elements(
 
 ///|
 fn element_map(elements : Array[@model.Element]) -> Map[String, @model.Element] {
-  let map = {}
+  let map : Map[String, @model.Element] = Map([])
   for e in elements {
     map[e.id] = e
   }
@@ -110,7 +118,7 @@ pub fn export_to_svg(
   let elements = check_elements(scene.elements, on_unsupported, warnings)
   // Frame titles become text elements of their own.
   let for_render = add_frame_labels(elements, measure)
-  let frame_ids = {}
+  let frame_ids : Map[String, Bool] = Map([])
   for e in for_render {
     if is_frame(e) {
       frame_ids[e.id] = true

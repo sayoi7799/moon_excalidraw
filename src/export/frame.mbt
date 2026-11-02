@@ -61,7 +61,7 @@ fn measure_block(
 ) -> (Double, Double) {
   let lines = text
     .split("\n")
-    .map(fn(l) { if l == "" { " " } else { l.to_string() } })
+    .map(fn(l) { if l == "" { " " } else { l.to_owned() } })
   let joined = lines.join("\n")
   let line_count = @text.split_lines(normalize_text(joined)).length()
   let mut width = 0.0
@@ -78,7 +78,7 @@ fn measure_block(
 /// The first `units` UTF-16 code units of a text. Cutting through a surrogate
 /// pair leaves half of it, which a saved file shows as U+FFFD.
 fn take_units(chars : Array[Char], units : Int32) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let mut used = 0
   for c in chars {
     let size = if c.to_int() > 0xFFFF { 2 } else { 1 }

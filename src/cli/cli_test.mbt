@@ -11,7 +11,7 @@ const EMBED : String = "{\"type\":\"excalidraw\",\"elements\":[{\"id\":\"e\",\"t
 fn reader(
   files : Map[String, String],
 ) -> (String) -> String raise @cli.CliError {
-  fn(path) {
+  fn(path) raise @cli.CliError {
     match files.get(path) {
       Some(text) => text
       None => raise @cli.Io("no such file")
@@ -73,7 +73,7 @@ test "parse_args rejects bad usage" {
   let bad = [[], ["a", "b"], ["a", "--wat"], ["a", "-o"], ["-o", "--strict"]]
   for args in bad {
     let r = Ok(@cli.parse_args(args)) catch { e => Err(e) }
-    assert_true(r is Err(@cli.Usage(_)), msg="should reject \{args}")
+    assert_true(r is Err(@cli.Usage(_)), msg="should reject \{args.join(" ")}")
   }
 }
 
@@ -95,7 +95,7 @@ test "converts a file to stdout" {
 
 ///|
 test "writes to the output file when asked" {
-  let written = {}
+  let written : Map[String, String] = Map([])
   let r = run(
     ["a.excalidraw", "-o", "out.svg", "--no-fonts"],
     { "a.excalidraw": RECT },

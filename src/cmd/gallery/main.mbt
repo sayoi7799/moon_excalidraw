@@ -9,7 +9,7 @@ const B64 : String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345
 ///|
 fn base64(bytes : Bytes) -> String {
   let table = B64.to_array()
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let n = bytes.length()
   let mut i = 0
   while i < n {
@@ -134,7 +134,7 @@ fn main {
       cases: every(@fixtures.single_text, 8),
     },
   ]
-  let body = StringBuilder::new()
+  let body = StringBuilder()
   let mut total = 0
   let mut same = 0
   for section in sections {

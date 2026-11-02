@@ -2,6 +2,7 @@
 package "sayoi7799/moon_excalidraw/cli"
 
 import {
+  "moonbitlang/core/debug",
   "sayoi7799/moon_excalidraw/export",
 }
 
@@ -16,7 +17,8 @@ pub fn usage() -> String
 pub(all) suberror CliError {
   Usage(String)
   Io(String)
-} derive(Show)
+} derive(@debug.Debug)
+pub impl Show for CliError
 
 // Types and methods
 pub(all) struct CliOptions {

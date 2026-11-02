@@ -115,7 +115,7 @@ fn write_node(out : StringBuilder, node : Node) -> Unit {
 
 ///|
 pub fn Node::to_html(self : Node) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   write_node(out, self)
   out.to_string()
 }

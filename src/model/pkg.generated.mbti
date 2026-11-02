@@ -1,6 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "sayoi7799/moon_excalidraw/model"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
 pub fn js_trim(String) -> String
 
@@ -13,7 +17,8 @@ pub suberror ParseError {
   InvalidJson(String)
   NotAScene(String)
   InvalidElement(String, String)
-} derive(Show)
+} derive(@debug.Debug)
+pub impl Show for ParseError
 
 // Types and methods
 pub(all) struct BoundElement {

@@ -22,7 +22,7 @@ fn split_numbers(s : String) -> (Array[String], Array[Double]) {
   let chars = s.to_array()
   let text = []
   let numbers = []
-  let current = StringBuilder::new()
+  let current = StringBuilder()
   let mut i = 0
   while i < chars.length() {
     if is_number_char(chars[i]) {
@@ -44,7 +44,7 @@ fn split_numbers(s : String) -> (Array[String], Array[Double]) {
         }
       }
       let negative = i > 0 && chars[i - 1] == '-'
-      let v = @jsmath.parse_float(String::from_array(chars[i:j].to_array()))
+      let v = @jsmath.parse_float(String::from_array(chars[i:j].to_owned()))
       numbers.push(if negative { -v } else { v })
       text.push(current.to_string())
       current.reset()
@@ -61,7 +61,7 @@ fn split_numbers(s : String) -> (Array[String], Array[Double]) {
 ///|
 /// The markup with attribute values and text removed.
 fn skeleton(s : String) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let mut in_tag = false
   let mut in_value = false
   for c in s {

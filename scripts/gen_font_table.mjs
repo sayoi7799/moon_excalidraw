@@ -45,6 +45,6 @@ export async function writeFontTable() {
   const note = `Node ${process.versions.node}, ICU ${process.versions.icu}, Unicode ${process.versions.unicode}`;
   writeGen(
     "src/text/font_faces_gen.mbt",
-    `///|\npub let font_face_table : Array[FaceData] = [\n${rows.join("\n")}\n]\n\n///|\n/// Code point ranges (low, high) of the official containsCJK, as ${note}.\npub let cjk_ranges : Array[Int] = [${spans.join(", ")}]\n`,
+    `///|\npub let font_face_table : Array[FaceData] = [\n${rows.join("\n")}\n]\n\n///|\n/// Code point ranges (low, high) of the official containsCJK. They follow the Unicode version of the Node that generates them.\npub let cjk_ranges : Array[Int] = [${spans.join(", ")}]\n`,
   );
 }

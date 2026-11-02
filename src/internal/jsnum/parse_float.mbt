@@ -26,7 +26,7 @@ fn is_digit(c : Char) -> Bool {
 ///|
 /// The digits starting at `from`, and the index after them.
 fn digits_from(chars : Array[Char], from : Int32) -> (String, Int32) {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let mut i = from
   while i < chars.length() && is_digit(chars[i]) {
     out.write_char(chars[i])
@@ -52,7 +52,7 @@ pub fn parse_float(s : String) -> Double {
   }
   let infinity = "Infinity".to_array()
   if i + infinity.length() <= n &&
-    chars[i:i + infinity.length()].to_array() == infinity {
+    chars[i:i + infinity.length()].to_owned() == infinity {
     return if negative { @double.neg_infinity } else { @double.infinity }
   }
   let (int_part, after_int) = digits_from(chars, i)

@@ -16,7 +16,7 @@ fn is_digit(c : Char) -> Bool {
 pub fn trim_path_decimals(path : String) -> String {
   let chars = path.to_array()
   let n = chars.length()
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let mut i = 0
   while i < n {
     let mut j = i

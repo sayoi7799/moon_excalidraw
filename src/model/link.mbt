@@ -30,7 +30,7 @@ pub fn js_trim(s : String) -> String {
   while end > start && is_js_space(chars[end - 1]) {
     end -= 1
   }
-  String::from_array(chars[start:end].to_array())
+  String::from_array(chars[start:end].to_owned())
 }
 
 ///|
@@ -47,9 +47,9 @@ fn is_word(c : Char) -> Bool {
 fn char_from_entity(token : Array[Char]) -> Char {
   let (radix, digits) = if token.length() > 2 && token[0] == '0' {
     match token[1] {
-      'x' | 'X' => (16, token[2:].to_array())
-      'o' | 'O' => (8, token[2:].to_array())
-      'b' | 'B' => (2, token[2:].to_array())
+      'x' | 'X' => (16, token[2:].to_owned())
+      'o' | 'O' => (8, token[2:].to_owned())
+      'b' | 'B' => (2, token[2:].to_owned())
       _ => (10, token)
     }
   } else {
@@ -89,7 +89,7 @@ fn decode_html_characters(chars : Array[Char]) -> Array[Char] {
       while j < chars.length() && is_word(chars[j]) {
         j += 1
       }
-      out.push(char_from_entity(chars[i + 2:j].to_array()))
+      out.push(char_from_entity(chars[i + 2:j].to_owned()))
       i = if j < chars.length() && chars[j] == ';' { j + 1 } else { j }
     } else {
       out.push(chars[i])
@@ -163,12 +163,12 @@ fn url_scheme(chars : Array[Char]) -> Array[Char]? {
     let mut i = line_end - 1
     while i > line_start {
       if chars[i] == ':' {
-        return Some(chars[line_start:i + 1].to_array())
+        return Some(chars[line_start:i + 1].to_owned())
       }
       if chars[i] == ';' &&
         i >= line_start + 7 &&
         matches_at(chars, i - 6, "&colon") {
-        return Some(chars[line_start:i + 1].to_array())
+        return Some(chars[line_start:i + 1].to_owned())
       }
       i -= 1
     }

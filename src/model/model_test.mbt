@@ -99,29 +99,29 @@ test "normalize_link matches official" {
 
 ///|
 test "invalid json raises" {
-  assert_true(attempt("{oops") is Err(@model.InvalidJson(_)))
+  assert_true(attempt("{oops") is Some(@model.InvalidJson(_)))
 }
 
 ///|
 test "non-object top level raises" {
-  assert_true(attempt("[1,2]") is Err(@model.NotAScene(_)))
+  assert_true(attempt("[1,2]") is Some(@model.NotAScene(_)))
 }
 
 ///|
 test "library file raises" {
   let r = attempt("{\"type\":\"excalidrawlib\",\"elements\":[]}")
-  assert_true(r is Err(@model.NotAScene(_)))
+  assert_true(r is Some(@model.NotAScene(_)))
 }
 
 ///|
 test "elements not array raises" {
-  assert_true(attempt("{\"elements\":1}") is Err(@model.NotAScene(_)))
+  assert_true(attempt("{\"elements\":1}") is Some(@model.NotAScene(_)))
 }
 
 ///|
 test "element not an object raises" {
   let r = attempt("{\"elements\":[3]}")
-  assert_true(r is Err(@model.InvalidElement("#0", _)))
+  assert_true(r is Some(@model.InvalidElement("#0", _)))
 }
 
 ///|
@@ -129,7 +129,7 @@ test "wrong field type names element" {
   let r = attempt(
     "{\"elements\":[{\"id\":\"e\",\"type\":\"rectangle\",\"width\":\"x\"}]}",
   )
-  assert_true(r is Err(@model.InvalidElement("e", _)))
+  assert_true(r is Some(@model.InvalidElement("e", _)))
 }
 
 ///|
@@ -137,7 +137,7 @@ test "non-numeric points name element" {
   let r = attempt(
     "{\"elements\":[{\"id\":\"l\",\"type\":\"line\",\"points\":[[0,0],[\"a\",1]]}]}",
   )
-  assert_true(r is Err(@model.InvalidElement("l", _)))
+  assert_true(r is Some(@model.InvalidElement("l", _)))
 }
 
 ///|
@@ -145,17 +145,17 @@ test "arrow without points raises" {
   let r = attempt(
     "{\"elements\":[{\"id\":\"a\",\"type\":\"arrow\",\"x\":0,\"y\":0}]}",
   )
-  assert_true(r is Err(@model.InvalidElement("a", _)))
+  assert_true(r is Some(@model.InvalidElement("a", _)))
 }
 
 ///|
 test "utf8 bom skipped" {
-  assert_true(attempt("\u{FEFF}{\"elements\":[]}") is Ok(_))
+  assert_true(attempt("\u{FEFF}{\"elements\":[]}") is None)
 }
 
 ///|
 test "unknown fields tolerated" {
-  assert_true(attempt("{\"elements\":[],\"wat\":1}") is Ok(_))
+  assert_true(attempt("{\"elements\":[],\"wat\":1}") is None)
 }
 
 ///|
@@ -182,8 +182,9 @@ test "app state defaults" {
 }
 
 ///|
-fn attempt(s : String) -> Result[@model.Scene, @model.ParseError] {
-  Ok(@model.parse_scene(s)) catch {
-    e => Err(e)
+fn attempt(s : String) -> @model.ParseError? {
+  ignore(@model.parse_scene(s)) catch {
+    e => return Some(e)
   }
+  None
 }

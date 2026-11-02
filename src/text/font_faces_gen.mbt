@@ -3612,7 +3612,7 @@ pub let font_face_table : Array[FaceData] = [
 ]
 
 ///|
-/// Code point ranges (low, high) of the official containsCJK, as Node 24.20.0, ICU 78.3, Unicode 17.0.
+/// Code point ranges (low, high) of the official containsCJK. They follow the Unicode version of the Node that generates them.
 pub let cjk_ranges : Array[Int32] = [
   4352, 4607, 8229, 8229, 11904, 11929, 11931, 12019, 12032, 12245, 12289, 12291,
   12293, 12306, 12308, 12319, 12321, 12329, 12334, 12336, 12344, 12347, 12353, 12438,

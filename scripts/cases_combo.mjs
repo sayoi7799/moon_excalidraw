@@ -24,7 +24,8 @@ function normalize(elements, seedRng) {
   elements.forEach((e) => id(e.id));
   return JSON.parse(JSON.stringify(elements)).map((e, i) => {
     e.id = id(e.id);
-    e.seed = 1 + Math.floor(seedRng() * 2 ** 31 - 2);
+    // Labels get a random seed from the converter; everything else keeps the one it was given.
+    if (e.type === "text") e.seed = 1 + Math.floor(seedRng() * 2 ** 31 - 2);
     e.versionNonce = 1000 + i;
     e.updated = 1;
     if (e.containerId) e.containerId = id(e.containerId);
@@ -41,7 +42,11 @@ export async function comboScenes() {
   const seedRng = rng(99);
   const cases = [];
   const build = (name, skeleton, extra = {}, mutate) => {
-    let elements = official.convertToExcalidrawElements(skeleton);
+    // The converter places an arrow's label using a curve drawn with the arrow's
+    // seed, and invents a random seed when none is given. Fixing the seeds makes
+    // the labels land in the same place on every run.
+    const seeded = skeleton.map((s, i) => ({ seed: 1 + Math.floor(seedRng() * 2 ** 31 - 2), ...s }));
+    let elements = official.convertToExcalidrawElements(seeded);
     elements = normalize(elements, seedRng);
     if (mutate) mutate(elements);
     const { appState, files, fonts } = extra;

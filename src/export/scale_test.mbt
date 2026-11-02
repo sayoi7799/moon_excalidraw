@@ -41,7 +41,7 @@ test "scale: a freedraw stroke of 10000 points" {
 
 ///|
 test "scale: deeply nested JSON is an error, not a crash" {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   for _ in 0..<100000 {
     sb.write_char('[')
   }
@@ -51,7 +51,7 @@ test "scale: deeply nested JSON is an error, not a crash" {
 
 ///|
 test "scale: deeply nested fields inside an element are an error too" {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_string(
     "{\"elements\":[{\"id\":\"a\",\"type\":\"rectangle\",\"customData\":",
   )

@@ -127,4 +127,14 @@ pub suberror ParseError {
   NotAScene(String)
   /// An element with this id has an unusable field, described by the message.
   InvalidElement(String, String)
-} derive(Show)
+} derive(Debug)
+
+///|
+pub impl Show for ParseError with fn output(self, logger) {
+  match self {
+    InvalidJson(message) => logger.write_string("invalid JSON: \{message}")
+    NotAScene(message) => logger.write_string("not a scene: \{message}")
+    InvalidElement(id, message) =>
+      logger.write_string("element \"\{id}\": \{message}")
+  }
+}

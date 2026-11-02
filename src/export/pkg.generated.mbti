@@ -20,7 +20,8 @@ pub fn is_frame(@model.Element) -> Bool
 // Errors
 pub suberror ExportError {
   Unsupported(String, String)
-} derive(Show)
+} derive(@debug.Debug)
+pub impl Show for ExportError
 
 // Types and methods
 pub(all) struct ExportResult {
@@ -31,17 +32,17 @@ pub(all) struct ExportResult {
 pub(all) enum FontMode {
   Url
   None
-} derive(Eq, Show, @debug.Debug)
+} derive(Eq, @debug.Debug)
 
 pub(all) enum UnsupportedPolicy {
   Error
   SkipWithWarning
-} derive(Eq, Show, @debug.Debug)
+} derive(Eq, @debug.Debug)
 
 pub(all) struct Warning {
   element_id : String?
   message : String
-} derive(Eq, Show, @debug.Debug)
+} derive(Eq, @debug.Debug)
 
 // Type aliases
 

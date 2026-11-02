@@ -44,7 +44,7 @@ fn contains_cjk(chars : Array[Char]) -> Bool {
 /// rule is written once even if two families ask for the same file.
 pub fn font_face_declarations(texts : Array[(Int32, String)]) -> Array[String] {
   let families : Array[Int32] = []
-  let chars : Map[Int32, Array[Char]] = {}
+  let chars : Map[Int32, Array[Char]] = Map([])
   for text in texts {
     let (family, original) = text
     if !families.contains(family) {

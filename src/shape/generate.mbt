@@ -59,7 +59,7 @@ pub fn generate(
     Freedraw({ points, .. }) => freedraw_fill(e, points)
     Line({ points, .. }) => [linear_curve(e, points)]
     Arrow({ points, start_arrowhead, end_arrowhead, .. }) => {
-      let options = Ref::new(rough_options(e))
+      let options = Ref(rough_options(e))
       let curve = linear_curve(e, points)
       let shapes = [curve]
       if start_arrowhead is Some(head) {

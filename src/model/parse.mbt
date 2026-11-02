@@ -71,7 +71,7 @@ fn Fields::points(
 
 ///|
 fn parse_files(root : Map[String, Json]) -> Map[String, FileData] {
-  let files = {}
+  let files : Map[String, FileData] = Map([])
   if root.get("files") is Some(Object(entries)) {
     for key, value in entries {
       if value is Object(f) &&

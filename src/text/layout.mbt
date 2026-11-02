@@ -4,7 +4,7 @@
 /// `text.replace(/\r\n?/g, "\n").split("\n")`.
 pub fn split_lines(text : String) -> Array[String] {
   let lines = []
-  let current = StringBuilder::new()
+  let current = StringBuilder()
   let chars = text.to_array()
   let mut i = 0
   while i < chars.length() {

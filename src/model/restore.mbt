@@ -136,7 +136,7 @@ fn restore_text(f : Fields, height : Double) -> TextData raise ParseError {
     Some(font) => {
       let parts = font.split(" ").collect()
       let name = if parts.length() > 1 { parts[1] } else { "" }
-      (@jsnum.parse_float(parts[0].to_string()), font_family_by_name(name))
+      (@jsnum.parse_float(parts[0].to_owned()), font_family_by_name(name))
     }
     None => {
       // The official code would write font-size="undefinedpx".

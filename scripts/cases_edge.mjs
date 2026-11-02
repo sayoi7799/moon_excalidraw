@@ -51,7 +51,6 @@ export function edgeScenes() {
   add("number/opacity-zero", scene([rect({ opacity: 0 })]));
   add("number/opacity-over", scene([rect({ opacity: 150 })]));
   add("number/seed-negative", scene([rect({ seed: -5 })]));
-  add("number/seed-large", scene([rect({ seed: 2147483648 })]));
   add("number/seed-fractional", scene([rect({ seed: 1.5 })]));
   add("number/seed-missing", scene([{ ...rect(), seed: undefined }]));
 

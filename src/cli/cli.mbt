@@ -8,7 +8,15 @@ pub(all) suberror CliError {
   Usage(String)
   /// A file couldn't be read or written.
   Io(String)
-} derive(Show)
+} derive(Debug)
+
+///|
+pub impl Show for CliError with fn output(self, logger) {
+  match self {
+    Usage(message) => logger.write_string(message)
+    Io(message) => logger.write_string(message)
+  }
+}
 
 ///|
 pub(all) struct CliOptions {
@@ -55,7 +63,7 @@ pub fn parse_args(args : Array[String]) -> CliOptions raise CliError {
       output = Some(args[i + 1])
       i += 1
     } else if arg.has_prefix("--output=") {
-      output = Some(arg.view(start_offset="--output=".length()).to_string())
+      output = Some(arg.view(start_offset="--output=".length()).to_owned())
     } else if arg.has_prefix("-") {
       raise Usage("unknown option \{arg}")
     } else if input is Some(_) {
@@ -97,7 +105,7 @@ pub fn run(
 ) -> CliResult {
   let options = parse_args(args) catch {
     Usage(message) => return failure(2, message + "\n\n" + usage())
-    e => return failure(2, e.to_string())
+    e => return failure(2, Show::to_string(e))
   }
   if options.help {
     return { code: 0, stdout: usage(), stderr: "", }
