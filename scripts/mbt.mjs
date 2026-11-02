@@ -6,9 +6,19 @@ import { fileURLToPath } from "node:url";
 
 export const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
+/** A MoonBit string expression; long strings become concatenated literals
+ * because the compiler limits the width of a single literal. */
 export function str(s) {
+  const chars = [...s];
+  if (chars.length <= 2000) return lit(chars);
+  const pieces = [];
+  for (let i = 0; i < chars.length; i += 2000) pieces.push(lit(chars.slice(i, i + 2000)));
+  return pieces.join(" +\n    ");
+}
+
+function lit(chars) {
   let out = '"';
-  for (const ch of s) {
+  for (const ch of chars) {
     const c = ch.codePointAt(0);
     if (ch === "\\") out += "\\\\";
     else if (ch === '"') out += '\\"';

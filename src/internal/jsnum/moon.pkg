@@ -1,0 +1,9 @@
+import {
+  "sayoi7799/moon_rough/jsmath",
+  "moonbitlang/core/double",
+}
+
+import {
+  "sayoi7799/moon_excalidraw/internal/conform",
+  "sayoi7799/moon_excalidraw/internal/fixtures",
+} for "test"

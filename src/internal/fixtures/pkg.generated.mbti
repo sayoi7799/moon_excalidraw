@@ -1,0 +1,23 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sayoi7799/moon_excalidraw/internal/fixtures"
+
+// Values
+pub let atan2_cases : Array[String]
+
+pub let cube_cases : Array[String]
+
+pub let hypot_cases : Array[String]
+
+// Errors
+
+// Types and methods
+pub(all) struct SceneCase {
+  name : String
+  input : String
+  fonts : String
+  expected : String?
+}
+
+// Type aliases
+
+// Traits

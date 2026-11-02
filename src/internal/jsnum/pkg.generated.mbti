@@ -1,0 +1,17 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sayoi7799/moon_excalidraw/internal/jsnum"
+
+// Values
+pub fn atan2(Double, Double) -> Double
+
+pub fn cube(Double) -> Double
+
+pub fn hypot(Double, Double) -> Double
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

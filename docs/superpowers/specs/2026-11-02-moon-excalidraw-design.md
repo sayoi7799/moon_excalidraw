@@ -132,7 +132,7 @@ pub enum UnsupportedPolicy { Error; SkipWithWarning }
 | `FontMode::Url` 的字体块 | 逐字节一致 |
 | perfect-freehand 轮廓 | 每个 double 按十六进制逐位一致 |
 
-**不可对照项：** 内联字体的 base64 数据；真实系统字体下的 frame 标题测量值；`seed: 0`；重复元素 id（官方随机生成新 id）。
+**不可对照项：** 内联字体的 base64 数据；真实系统字体下的 frame 标题测量值；`seed: 0`；重复元素 id（官方随机生成新 id）；`Math.pow(x, 3)` 的最后一位（V8 13.6 调用平台 C 库的 `std::pow`，官方结果本身随平台变化，本库用正确舍入的立方）。
 
 失败时报告差异分类（结构、属性、数值）和最大数值偏差。统计结果写入 README。
 
