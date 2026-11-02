@@ -30,6 +30,11 @@ fn check_suite(name : String, cases : Array[@fixtures.SceneCase]) -> Unit raise 
 }
 
 ///|
+test "single linear match official" {
+  check_suite("single linear", @fixtures.single_linear)
+}
+
+///|
 test "single basic shapes match official" {
   check_suite("single basic", @fixtures.single_basic)
 }

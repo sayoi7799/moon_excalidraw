@@ -53,10 +53,30 @@ fn round_diamond_path(e : @model.Element) -> String {
 pub fn generate(
   e : @model.Element,
   canvas_background : String,
-) -> Array[@moon_rough.Drawable] raise @moon_rough.PathError {
-  ignore(canvas_background)
+) -> Array[@moon_rough.Drawable] raise {
   let gen = @moon_rough.generator()
   match e.kind {
+    Line({ points, .. }) => [linear_curve(e, points)]
+    Arrow({ points, start_arrowhead, end_arrowhead, .. }) => {
+      let options = Ref::new(rough_options(e))
+      let curve = linear_curve(e, points)
+      let shapes = [curve]
+      if start_arrowhead is Some(head) {
+        shapes.append(
+          arrowhead_shapes(
+            gen, e, points, curve, true, head, options, canvas_background,
+          ),
+        )
+      }
+      if end_arrowhead is Some(head) {
+        shapes.append(
+          arrowhead_shapes(
+            gen, e, points, curve, false, head, options, canvas_background,
+          ),
+        )
+      }
+      shapes
+    }
     Rectangle =>
       if e.roundness is Some(_) {
         [

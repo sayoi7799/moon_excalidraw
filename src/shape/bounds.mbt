@@ -27,28 +27,50 @@ fn max4(a : Double, b : Double, c : Double, d : Double) -> Double {
 ///|
 /// `getElementAbsoluteCoords`: x1, y1, x2, y2, cx, cy, ignoring rotation.
 pub fn absolute_coords(
+  cache : ShapeCache,
   e : @model.Element,
   map : Map[String, @model.Element],
 ) -> (Double, Double, Double, Double, Double, Double) {
   ignore(map)
-  (
-    e.x,
-    e.y,
-    e.x + e.width,
-    e.y + e.height,
-    e.x + e.width / 2.0,
-    e.y + e.height / 2.0,
-  )
+  match e.kind {
+    Freedraw({ points, .. }) => {
+      let (min_x, min_y, max_x, max_y) = points_bounds(points)
+      let x1 = min_x + e.x
+      let y1 = min_y + e.y
+      let x2 = max_x + e.x
+      let y2 = max_y + e.y
+      (x1, y1, x2, y2, (x1 + x2) / 2.0, (y1 + y2) / 2.0)
+    }
+    Line(_) | Arrow(_) => linear_absolute_coords(cache, e)
+    _ =>
+      (
+        e.x,
+        e.y,
+        e.x + e.width,
+        e.y + e.height,
+        e.x + e.width / 2.0,
+        e.y + e.height / 2.0,
+      )
+  }
 }
 
 ///|
 /// `getElementBounds`: the box around the element after rotation.
 pub fn element_bounds(
+  cache : ShapeCache,
   e : @model.Element,
   map : Map[String, @model.Element],
 ) -> (Double, Double, Double, Double) {
-  let (x1, y1, x2, y2, cx, cy) = absolute_coords(e, map)
+  let (x1, y1, x2, y2, cx, cy) = absolute_coords(cache, e, map)
   match e.kind {
+    Freedraw({ points, .. }) => {
+      let rotated = points.map(fn(p) {
+        rotate(p.0, p.1, cx - e.x, cy - e.y, e.angle)
+      })
+      let (min_x, min_y, max_x, max_y) = points_bounds(rotated)
+      (min_x + e.x, min_y + e.y, max_x + e.x, max_y + e.y)
+    }
+    Line(_) | Arrow(_) => linear_rotated_bounds(e, cx, cy)
     Diamond => {
       let (x11, y11) = rotate(cx, y1, cx, cy, e.angle)
       let (x12, y12) = rotate(cx, y2, cx, cy, e.angle)
@@ -88,6 +110,7 @@ pub fn element_bounds(
 ///|
 /// `getCommonBounds`. As upstream, an empty list is the empty box at the origin.
 pub fn common_bounds(
+  cache : ShapeCache,
   elements : Array[@model.Element],
   map : Map[String, @model.Element],
 ) -> (Double, Double, Double, Double) {
@@ -99,7 +122,7 @@ pub fn common_bounds(
   let mut max_x = @double.neg_infinity
   let mut max_y = @double.neg_infinity
   for e in elements {
-    let (x1, y1, x2, y2) = element_bounds(e, map)
+    let (x1, y1, x2, y2) = element_bounds(cache, e, map)
     min_x = @jsmath.min(min_x, x1)
     min_y = @jsmath.min(min_y, y1)
     max_x = @jsmath.max(max_x, x2)

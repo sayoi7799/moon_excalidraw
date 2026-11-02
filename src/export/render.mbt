@@ -10,6 +10,7 @@ priv struct RenderContext {
   offset_y : Double
   canvas_background : String
   warnings : Array[Warning]
+  cache : @shape.ShapeCache
 }
 
 ///|
@@ -97,8 +98,8 @@ fn render_element(
   offset_x : Double,
   offset_y : Double,
   ctx : RenderContext,
-) -> Unit raise @moon_rough.PathError {
-  let (x1, y1, x2, y2, _, _) = @shape.absolute_coords(e, map)
+) -> Unit raise {
+  let (x1, y1, x2, y2, _, _) = @shape.absolute_coords(ctx.cache, e, map)
   let cx = (x2 - x1) / 2.0 - (e.x - x1)
   let cy = (y2 - y1) / 2.0 - (e.y - y1)
   let degree = 180.0 * e.angle / @jsmath.PI
@@ -111,6 +112,27 @@ fn render_element(
       node.set("stroke-linecap", "round")
       set_transform(node, offset_x, offset_y, degree, cx, cy)
       svg_root.append(node)
+    }
+    Line(l) | Arrow(l) => {
+      let mask = @svg.Node::element("mask")
+      let group = @svg.Node::element("g")
+      group.set("stroke-linecap", "round")
+      let shapes = @shape.generate(e, ctx.canvas_background)
+      ctx.cache.mark(e)
+      let filled_loop = e.kind is Line(_) &&
+        @shape.is_path_a_loop(l.points) &&
+        e.background_color != "transparent"
+      for shape in shapes {
+        let node = draw_rough(shape)
+        set_opacity(node, opacity)
+        set_transform(node, offset_x, offset_y, degree, cx, cy)
+        if filled_loop {
+          node.set("fill-rule", "evenodd")
+        }
+        group.append(node)
+      }
+      svg_root.append(group)
+      svg_root.append(mask)
     }
     _ => ()
   }

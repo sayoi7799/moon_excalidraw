@@ -109,7 +109,9 @@ pub fn export_to_svg(
   ignore(measure_text)
   let warnings = []
   let elements = check_elements(scene.elements, on_unsupported, warnings)
+  let cache = @shape.ShapeCache::new()
   let (min_x, min_y, max_x, max_y) = @shape.common_bounds(
+    cache,
     elements,
     element_map(elements),
   )
@@ -145,6 +147,7 @@ pub fn export_to_svg(
     offset_y,
     canvas_background: scene.view_background_color,
     warnings,
+    cache,
   })
   { svg: root.to_html(), warnings, }
 }

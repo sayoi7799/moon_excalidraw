@@ -4,31 +4,39 @@ package "sayoi7799/moon_excalidraw/shape"
 import {
   "sayoi7799/moon_excalidraw/model",
   "sayoi7799/moon_rough/core",
-  "sayoi7799/moon_rough/path_data",
 }
 
 // Values
-pub fn absolute_coords(@model.Element, Map[String, @model.Element]) -> (Double, Double, Double, Double, Double, Double)
+pub fn absolute_coords(ShapeCache, @model.Element, Map[String, @model.Element]) -> (Double, Double, Double, Double, Double, Double)
 
-pub fn common_bounds(Array[@model.Element], Map[String, @model.Element]) -> (Double, Double, Double, Double)
+pub fn common_bounds(ShapeCache, Array[@model.Element], Map[String, @model.Element]) -> (Double, Double, Double, Double)
 
 pub fn corner_radius(Double, @model.Element) -> Double
 
+pub fn curve_path_ops(@core.Drawable) -> Array[@core.Op]
+
 pub fn diamond_points(@model.Element) -> (Double, Double, Double, Double, Double, Double, Double, Double)
 
-pub fn element_bounds(@model.Element, Map[String, @model.Element]) -> (Double, Double, Double, Double)
+pub fn element_bounds(ShapeCache, @model.Element, Map[String, @model.Element]) -> (Double, Double, Double, Double)
 
-pub fn generate(@model.Element, String) -> Array[@core.Drawable] raise @path_data.PathError
+pub fn generate(@model.Element, String) -> Array[@core.Drawable] raise
 
 pub fn is_path_a_loop(Array[(Double, Double)]) -> Bool
 
 pub fn is_transparent(String) -> Bool
+
+pub fn linear_curve(@model.Element, Array[(Double, Double)]) -> @core.Drawable
 
 pub fn rough_options(@model.Element, continuous_path? : Bool) -> @core.Options
 
 // Errors
 
 // Types and methods
+pub struct ShapeCache {
+  // private fields
+}
+pub fn ShapeCache::mark(Self, @model.Element) -> Unit
+pub fn ShapeCache::new() -> Self
 
 // Type aliases
 

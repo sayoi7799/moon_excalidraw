@@ -120,6 +120,11 @@ const suites = {
     await suite("single_basic", singleBasic());
   },
 
+  async singleLinear() {
+    const { singleLinear } = await import("./cases_linear.mjs");
+    await suite("single_linear", singleLinear());
+  },
+
   async jsnum() {
     const hypot = binaryCases(function hypot(a, b) { return Math.hypot(a, b); }, 5000, (r) => [scaled(r), scaled(r)]);
     const atan2 = binaryCases(function atan2(a, b) { return Math.atan2(a, b); }, 5000, (r) => [scaled(r), scaled(r)]);
