@@ -18,6 +18,7 @@ preferred_target = "js"
 
 import {
   "sayoi7799/moon_rough@0.2.1",
+  "moonbitlang/x@0.5.7",
 }
 
 warnings = "-implicit_impl_as_method"

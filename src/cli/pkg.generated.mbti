@@ -1,0 +1,38 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sayoi7799/moon_excalidraw/cli"
+
+import {
+  "sayoi7799/moon_excalidraw/export",
+}
+
+// Values
+pub fn parse_args(Array[String]) -> CliOptions raise CliError
+
+pub fn run(Array[String], (String) -> String raise CliError, (String, String) -> Unit raise CliError) -> CliResult
+
+pub fn usage() -> String
+
+// Errors
+pub(all) suberror CliError {
+  Usage(String)
+  Io(String)
+} derive(Show)
+
+// Types and methods
+pub(all) struct CliOptions {
+  input : String
+  output : String?
+  fonts : @export.FontMode
+  strict : Bool
+  help : Bool
+}
+
+pub(all) struct CliResult {
+  code : Int32
+  stdout : String
+  stderr : String
+}
+
+// Type aliases
+
+// Traits

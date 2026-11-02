@@ -1,12 +1,37 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "sayoi7799/moon_excalidraw"
 
+import {
+  "sayoi7799/moon_excalidraw/export",
+  "sayoi7799/moon_excalidraw/model",
+}
+
 // Values
+pub fn export_to_svg(@model.Scene, fonts? : @export.FontMode, on_unsupported? : @export.UnsupportedPolicy, measure_text? : (String, String) -> Double) -> @export.ExportResult raise @export.ExportError
+
+pub fn parse_scene(StringView) -> @model.Scene raise @model.ParseError
 
 // Errors
 
 // Types and methods
 
 // Type aliases
+pub using @model {type Element}
+
+pub using @export {type ExportError}
+
+pub using @export {type ExportResult}
+
+pub using @export {type FontMode}
+
+pub using @model {type Kind}
+
+pub using @model {type ParseError}
+
+pub using @model {type Scene}
+
+pub using @export {type UnsupportedPolicy}
+
+pub using @export {type Warning}
 
 // Traits

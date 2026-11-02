@@ -1,0 +1,15 @@
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/x/fs",
+  "moonbitlang/x/sys",
+  "sayoi7799/moon_excalidraw/cli",
+}
+
+pkgtype(kind: "executable")
+
+options(
+  targets: {
+    "args_js.mbt": [ "js" ],
+    "args_native.mbt": [ "native", "llvm", "wasm", "wasm-gc" ],
+  },
+)

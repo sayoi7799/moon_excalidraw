@@ -10,19 +10,19 @@ pub(all) enum FontMode {
   Url
   /// No fonts, like the official `skipInliningFonts`.
   None
-} derive(Eq, Show)
+} derive(Eq, Show, Debug)
 
 ///|
 pub(all) enum UnsupportedPolicy {
   Error
   SkipWithWarning
-} derive(Eq, Show)
+} derive(Eq, Show, Debug)
 
 ///|
 pub(all) struct Warning {
   element_id : String?
   message : String
-} derive(Eq, Show)
+} derive(Eq, Show, Debug)
 
 ///|
 pub(all) struct ExportResult {

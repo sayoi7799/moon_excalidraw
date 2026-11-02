@@ -2,6 +2,7 @@
 package "sayoi7799/moon_excalidraw/export"
 
 import {
+  "moonbitlang/core/debug",
   "sayoi7799/moon_excalidraw/model",
   "sayoi7799/moon_excalidraw/shape",
   "sayoi7799/moon_excalidraw/svg",
@@ -30,17 +31,17 @@ pub(all) struct ExportResult {
 pub(all) enum FontMode {
   Url
   None
-} derive(Eq, Show)
+} derive(Eq, Show, @debug.Debug)
 
 pub(all) enum UnsupportedPolicy {
   Error
   SkipWithWarning
-} derive(Eq, Show)
+} derive(Eq, Show, @debug.Debug)
 
 pub(all) struct Warning {
   element_id : String?
   message : String
-} derive(Eq, Show)
+} derive(Eq, Show, @debug.Debug)
 
 // Type aliases
 
