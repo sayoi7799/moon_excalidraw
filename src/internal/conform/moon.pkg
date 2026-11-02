@@ -1,3 +1,8 @@
 import {
+  "sayoi7799/moon_excalidraw/internal/fixtures",
+  "sayoi7799/moon_rough/jsmath",
+}
+
+import {
   "moonbitlang/core/json",
 } for "test"

@@ -14,6 +14,12 @@ pub let link_cases : Array[(String, String)]
 
 pub let restore_cases : Array[RestoreCase]
 
+pub let svg_cases : Array[(String, String)]
+
+pub let svg_style_case : String
+
+pub let svg_tree_case : String
+
 // Errors
 
 // Types and methods

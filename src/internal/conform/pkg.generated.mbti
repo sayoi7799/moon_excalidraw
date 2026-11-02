@@ -1,14 +1,42 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "sayoi7799/moon_excalidraw/internal/conform"
 
+import {
+  "moonbitlang/core/debug",
+  "sayoi7799/moon_excalidraw/internal/fixtures",
+}
+
 // Values
+pub fn classify(String, String) -> DiffKind
+
 pub fn hex_to_double(StringView) -> Double
+
+pub fn run(String, Array[@fixtures.SceneCase], (@fixtures.SceneCase) -> String?) -> Stats
 
 pub fn same_bits(Double, Double) -> Bool
 
 // Errors
 
 // Types and methods
+pub(all) enum DiffKind {
+  Identical
+  Structural
+  Attribute
+  Numeric(Double)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Stats {
+  suite : String
+  total : Int32
+  identical : Int32
+  failed : Int32
+  structural : Int32
+  attribute : Int32
+  numeric : Int32
+  max_delta : Double
+  failures : Array[String]
+}
+pub impl Show for Stats
 
 // Type aliases
 

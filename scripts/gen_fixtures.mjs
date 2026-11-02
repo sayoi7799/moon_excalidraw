@@ -72,6 +72,32 @@ const suites = {
     );
   },
 
+  async svg() {
+    await (await import("./official_env.mjs")).loadOfficial();
+    const NS = "http://www.w3.org/2000/svg";
+    const el = (t) => document.createElementNS(NS, t);
+    const inputs = ["plain", "a&b", "a<b>c", 'say "hi"', "x y", "'q'", "中文 😀", "&amp;", "a\nb\tc", " "];
+    const lines = inputs.map((s) => {
+      const g = el("g");
+      g.setAttribute("a", s);
+      g.appendChild(document.createTextNode(s));
+      return `  (${str(s)}, ${str(g.outerHTML)}),`;
+    });
+    const style = el("style");
+    style.appendChild(document.createTextNode("a > b & c"));
+    const root = el("svg");
+    root.setAttribute("x", "1");
+    root.setAttribute("y", "2");
+    root.setAttribute("x", "3");
+    root.appendChild(document.createComment(" c "));
+    root.appendChild(el("path"));
+    root.prepend(el("defs"));
+    writeGen(
+      "src/internal/fixtures/svg_gen.mbt",
+      `///|\npub let svg_cases : Array[(String, String)] = [\n${lines.join("\n")}\n]\n\n///|\npub let svg_style_case : String = ${str(style.outerHTML)}\n\n///|\npub let svg_tree_case : String = ${str(root.outerHTML)}\n`,
+    );
+  },
+
   async jsnum() {
     const hypot = binaryCases(function hypot(a, b) { return Math.hypot(a, b); }, 5000, (r) => [scaled(r), scaled(r)]);
     const atan2 = binaryCases(function atan2(a, b) { return Math.atan2(a, b); }, 5000, (r) => [scaled(r), scaled(r)]);

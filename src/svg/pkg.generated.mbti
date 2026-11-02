@@ -1,0 +1,23 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sayoi7799/moon_excalidraw/svg"
+
+// Values
+pub fn num(Double) -> String
+
+// Errors
+
+// Types and methods
+pub struct Node {
+  // private fields
+}
+pub fn Node::append(Self, Self) -> Unit
+pub fn Node::comment(String) -> Self
+pub fn Node::element(String) -> Self
+pub fn Node::prepend(Self, Self) -> Unit
+pub fn Node::set(Self, String, String) -> Unit
+pub fn Node::text(String) -> Self
+pub fn Node::to_html(Self) -> String
+
+// Type aliases
+
+// Traits
