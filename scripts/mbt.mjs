@@ -62,9 +62,35 @@ export function strArray(name, items, { pub = true } = {}) {
   return `///|\n${pub ? "pub " : ""}let ${name} : Array[String] = [\n${lines}\n]\n`;
 }
 
-/** Pairs of fixture scene cases, split so no generated file gets too large. */
-export function sceneCases(name, cases) {
+/**
+ * Writes `name` as an array of SceneCase, split across files of about 1 MB.
+ * Each case: { name, input (string), fonts, expected (string or null) }.
+ */
+export function writeSceneSuite(name, cases) {
   const item = (c) =>
     `  { name: ${str(c.name)}, input: ${str(c.input)}, fonts: ${str(c.fonts)}, expected: ${c.expected === null ? "None" : `Some(${str(c.expected)})`} },`;
-  return `///|\npub let ${name} : Array[SceneCase] = [\n${cases.map(item).join("\n")}\n]\n`;
+  const parts = [[]];
+  let size = 0;
+  for (const c of cases) {
+    const text = item(c);
+    if (size + text.length > 1_000_000 && parts.at(-1).length) {
+      parts.push([]);
+      size = 0;
+    }
+    parts.at(-1).push(text);
+    size += text.length;
+  }
+  const names = [];
+  parts.forEach((items, i) => {
+    const part = `${name}_${i}`;
+    names.push(part);
+    writeGen(
+      `src/internal/fixtures/${name}_gen_${i}.mbt`,
+      `///|\nlet ${part} : Array[SceneCase] = [\n${items.join("\n")}\n]\n`,
+    );
+  });
+  writeGen(
+    `src/internal/fixtures/${name}_gen.mbt`,
+    `///|\npub let ${name} : Array[SceneCase] = [${names.map((n) => `..${n}`).join(", ")}]\n`,
+  );
 }

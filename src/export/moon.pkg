@@ -1,0 +1,12 @@
+import {
+  "sayoi7799/moon_rough",
+  "sayoi7799/moon_rough/jsmath",
+  "sayoi7799/moon_excalidraw/model",
+  "sayoi7799/moon_excalidraw/svg",
+  "sayoi7799/moon_excalidraw/shape",
+}
+
+import {
+  "sayoi7799/moon_excalidraw/internal/conform",
+  "sayoi7799/moon_excalidraw/internal/fixtures",
+} for "test"

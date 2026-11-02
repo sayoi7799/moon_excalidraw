@@ -1,6 +1,6 @@
 // Regenerates every fixture from the pinned official packages. Run from
 // scripts/: `npm ci && node gen_fixtures.mjs [suite...]`.
-import { hex, rng, str, strArray, writeGen } from "./mbt.mjs";
+import { hex, rng, str, strArray, writeGen, writeSceneSuite } from "./mbt.mjs";
 
 const canonNaN = (x) => (Number.isNaN(x) ? NaN : x);
 const specials = [0, -0, 1, -1, 2, 0.5, 3, NaN, Infinity, -Infinity, 1e-300, -1e-300, 1e300, -1e300, 5e-324, 1.7976931348623157e308];
@@ -30,6 +30,23 @@ function exactCube(x) {
   const up = rem > half || (rem === half && (q & 1n) === 1n);
   const value = Number(q + (up ? 1n : 0n)) * 2 ** ((exp - 1075) * 3 + drop);
   return x < 0 ? -value : value;
+}
+
+/** Exports each { name, scene, fonts? } officially and writes the suite. */
+async function suite(name, cases) {
+  const { exportScene } = await import("./official_env.mjs");
+  const out = [];
+  for (const c of cases) {
+    const fonts = c.fonts ?? "none";
+    let expected = null;
+    try {
+      expected = await exportScene(c.scene, { fonts });
+    } catch {
+      // The official code throws for this input: the case expects an error.
+    }
+    out.push({ name: c.name, input: c.raw ?? JSON.stringify(c.scene), fonts, expected });
+  }
+  writeSceneSuite(name, out);
 }
 
 const suites = {
@@ -96,6 +113,11 @@ const suites = {
       "src/internal/fixtures/svg_gen.mbt",
       `///|\npub let svg_cases : Array[(String, String)] = [\n${lines.join("\n")}\n]\n\n///|\npub let svg_style_case : String = ${str(style.outerHTML)}\n\n///|\npub let svg_tree_case : String = ${str(root.outerHTML)}\n`,
     );
+  },
+
+  async singleBasic() {
+    const { singleBasic } = await import("./cases_single.mjs");
+    await suite("single_basic", singleBasic());
   },
 
   async jsnum() {

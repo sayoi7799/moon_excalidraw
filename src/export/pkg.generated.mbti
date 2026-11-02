@@ -1,0 +1,39 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sayoi7799/moon_excalidraw/export"
+
+import {
+  "sayoi7799/moon_excalidraw/model",
+}
+
+// Values
+pub fn export_to_svg(@model.Scene, fonts? : FontMode, on_unsupported? : UnsupportedPolicy, measure_text? : (String, String) -> Double) -> ExportResult raise ExportError
+
+// Errors
+pub suberror ExportError {
+  Unsupported(String, String)
+} derive(Show)
+
+// Types and methods
+pub(all) struct ExportResult {
+  svg : String
+  warnings : Array[Warning]
+}
+
+pub(all) enum FontMode {
+  Url
+  None
+} derive(Eq, Show)
+
+pub(all) enum UnsupportedPolicy {
+  Error
+  SkipWithWarning
+} derive(Eq, Show)
+
+pub(all) struct Warning {
+  element_id : String?
+  message : String
+} derive(Eq, Show)
+
+// Type aliases
+
+// Traits
