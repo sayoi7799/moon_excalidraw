@@ -1,6 +1,6 @@
 // Regenerates every fixture from the pinned official packages. Run from
 // scripts/: `npm ci && node gen_fixtures.mjs [suite...]`.
-import { hex, rng, strArray, writeGen } from "./mbt.mjs";
+import { hex, rng, str, strArray, writeGen } from "./mbt.mjs";
 
 const canonNaN = (x) => (Number.isNaN(x) ? NaN : x);
 const specials = [0, -0, 1, -1, 2, 0.5, 3, NaN, Infinity, -Infinity, 1e-300, -1e-300, 1e300, -1e300, 5e-324, 1.7976931348623157e308];
@@ -54,6 +54,22 @@ const suites = {
   async freehand() {
     const { freehandCases } = await import("./cases_freehand.mjs");
     writeGen("src/internal/fixtures/freehand_gen.mbt", strArray("freehand_cases", freehandCases()));
+  },
+
+  async restore() {
+    const { canon, linkInputs, restoreScenes } = await import("./cases_restore.mjs");
+    const { loadOfficial } = await import("./official_env.mjs");
+    const { restoreElements } = await loadOfficial();
+    const { normalizeLink } = await import("./normalize_link.mjs");
+    const cases = Object.entries(restoreScenes).map(([name, elements]) => {
+      const restored = restoreElements(elements, null);
+      return `  { name: ${str(name)}, input: ${str(JSON.stringify({ elements }))}, expected: ${str(restored.map(canon).join("\n"))} },`;
+    });
+    const links = linkInputs.map((l) => `  (${str(l)}, ${str(normalizeLink(l))}),`);
+    writeGen(
+      "src/internal/fixtures/restore_gen.mbt",
+      `///|\npub let restore_cases : Array[RestoreCase] = [\n${cases.join("\n")}\n]\n\n///|\npub let link_cases : Array[(String, String)] = [\n${links.join("\n")}\n]\n`,
+    );
   },
 
   async jsnum() {

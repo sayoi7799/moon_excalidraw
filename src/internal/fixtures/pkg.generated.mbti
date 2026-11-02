@@ -10,9 +10,19 @@ pub let freehand_cases : Array[String]
 
 pub let hypot_cases : Array[String]
 
+pub let link_cases : Array[(String, String)]
+
+pub let restore_cases : Array[RestoreCase]
+
 // Errors
 
 // Types and methods
+pub(all) struct RestoreCase {
+  name : String
+  input : String
+  expected : String
+}
+
 pub(all) struct SceneCase {
   name : String
   input : String

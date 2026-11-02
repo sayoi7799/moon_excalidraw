@@ -1,0 +1,121 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sayoi7799/moon_excalidraw/model"
+
+// Values
+pub fn js_trim(String) -> String
+
+pub fn normalize_link(String) -> String
+
+pub fn parse_scene(StringView) -> Scene raise ParseError
+
+// Errors
+pub suberror ParseError {
+  InvalidJson(String)
+  NotAScene(String)
+  InvalidElement(String, String)
+} derive(Show)
+
+// Types and methods
+pub(all) struct BoundElement {
+  id : String
+  kind : String
+}
+
+pub(all) struct Crop {
+  x : Double
+  y : Double
+  width : Double
+  height : Double
+  natural_width : Double
+  natural_height : Double
+}
+
+pub(all) struct Element {
+  id : String
+  kind : Kind
+  x : Double
+  y : Double
+  width : Double
+  height : Double
+  angle : Double
+  stroke_color : String
+  background_color : String
+  fill_style : String
+  stroke_width : Double
+  stroke_style : String
+  roughness : Double
+  opacity : Double
+  seed : Int32
+  roundness : Roundness?
+  bound_elements : Array[BoundElement]
+  frame_id : String?
+  link : String?
+  is_deleted : Bool
+}
+
+pub(all) struct FileData {
+  id : String
+  mime_type : String
+  data_url : String
+}
+
+pub(all) struct FreeDraw {
+  points : Array[(Double, Double)]
+  pressures : Array[Double]
+  simulate_pressure : Bool
+}
+
+pub(all) struct ImageData {
+  file_id : String?
+  scale : (Double, Double)
+  crop : Crop?
+}
+
+pub(all) enum Kind {
+  Rectangle
+  Diamond
+  Ellipse
+  Line(Linear)
+  Arrow(Linear)
+  Freedraw(FreeDraw)
+  Text(TextData)
+  Image(ImageData)
+  Frame(String?)
+  MagicFrame(String?)
+  Unsupported(String)
+}
+
+pub(all) struct Linear {
+  points : Array[(Double, Double)]
+  start_arrowhead : String?
+  end_arrowhead : String?
+  elbowed : Bool
+}
+
+pub(all) struct Roundness {
+  kind : Int32
+  value : Double?
+}
+
+pub(all) struct Scene {
+  version : Double?
+  elements : Array[Element]
+  export_background : Bool
+  view_background_color : String
+  files : Map[String, FileData]
+}
+
+pub(all) struct TextData {
+  text : String
+  original_text : String
+  font_size : Double
+  font_family : Int32
+  text_align : String
+  vertical_align : String
+  container_id : String?
+  line_height : Double
+}
+
+// Type aliases
+
+// Traits
