@@ -65,7 +65,10 @@ lines.push(
   `| perfect-freehand outlines, every number compared by bit pattern | ${fhTotal} | ${fhBad} |`,
   `| \`restoreElements\` normalisation of old and partial elements | ${rsTotal} | ${rsBad} |`,
   `| JSON numbers read like V8 does | ${jdTotal} | ${jdBad} |`,
-  ...jsnum.map((j) => `| \`Math.${j.n === "cube" ? "pow(x, 3)" : j.n === "parse_float" ? "parseFloat" : j.n}\` | ${j.total} | ${j.bad} |`),
+  ...jsnum.map((j) => {
+    const name = j.n === "cube" ? "x³ correctly rounded (V8's `Math.pow(x, 3)` varies by platform)" : j.n === "parse_float" ? "`parseFloat`" : `\`Math.${j.n}\``;
+    return `| ${name} | ${j.total} | ${j.bad} |`;
+  }),
 );
 const table = `${BEGIN}\n${lines.join("\n")}\n${END}`;
 
