@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Browser check</title>
+<pre id="out">running…</pre>
+<script type="module">
+  const out = document.getElementById("out");
+  CanvasRenderingContext2D.prototype.measureText = function (t) {
+    return { width: [...t].length * 7 };
+  };
+  try {
+    window.EXCALIDRAW_ASSET_PATH = location.origin + "/";
+    const { exportToSvg } = await import("/bundle.mjs");
+    const cases = await (await fetch("/cases.json")).json();
+    const lines = [];
+    let same = 0;
+    for (const c of cases) {
+      const svg = (
+        await exportToSvg({
+          elements: c.elements,
+          appState: { exportBackground: true, viewBackgroundColor: "#ffffff" },
+          files: c.files,
+          skipInliningFonts: true,
+        })
+      ).outerHTML;
+      if (svg === c.expected) same++;
+      else {
+        let i = 0;
+        while (svg[i] === c.expected[i]) i++;
+        lines.push(`DIFF ${c.name} at ${i}\n  browser: ${svg.slice(i - 40, i + 80)}\n  jsdom:   ${c.expected.slice(i - 40, i + 80)}`);
+      }
+    }
+    out.textContent = `RESULT same=${same} total=${cases.length}\n${lines.join("\n")}`;
+  } catch (e) {
+    out.textContent = "ERROR " + (e && e.stack ? e.stack : e);
+  }
+</script>

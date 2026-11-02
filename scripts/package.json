@@ -1,0 +1,19 @@
+{
+  "name": "moon-excalidraw-fixtures",
+  "private": true,
+  "type": "module",
+  "description": "Generates official-output fixtures for moon_excalidraw.",
+  "scripts": {
+    "gen": "node gen_fixtures.mjs"
+  },
+  "dependencies": {
+    "@excalidraw/excalidraw": "0.18.1",
+    "perfect-freehand": "1.2.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "jsdom": "26.1.0"
+  }
+}
