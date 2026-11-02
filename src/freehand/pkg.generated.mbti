@@ -1,0 +1,41 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sayoi7799/moon_excalidraw/freehand"
+
+// Values
+pub fn end_taper(cap? : Bool, taper? : Taper) -> TaperOptions
+
+pub fn excalidraw_options(Double, Bool, Bool) -> StrokeOptions
+
+pub fn get_stroke(Array[(Double, Double, Double?)], StrokeOptions) -> Array[(Double, Double)]
+
+pub fn start_taper(cap? : Bool, taper? : Taper) -> TaperOptions
+
+// Errors
+
+// Types and methods
+pub(all) struct StrokeOptions {
+  size : Double
+  thinning : Double
+  smoothing : Double
+  streamline : Double
+  simulate_pressure : Bool
+  last : Bool
+  easing : (Double) -> Double
+  start : TaperOptions
+  end : TaperOptions
+}
+
+pub(all) enum Taper {
+  Length(Double)
+  Full
+}
+
+pub(all) struct TaperOptions {
+  cap : Bool
+  easing : (Double) -> Double
+  taper : Taper
+}
+
+// Type aliases
+
+// Traits

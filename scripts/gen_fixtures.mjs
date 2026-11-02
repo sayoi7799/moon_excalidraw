@@ -51,6 +51,11 @@ const suites = {
     writeGen("src/internal/conform/json_doubles_gen_test.mbt", strArray("json_doubles", lines, { pub: false }));
   },
 
+  async freehand() {
+    const { freehandCases } = await import("./cases_freehand.mjs");
+    writeGen("src/internal/fixtures/freehand_gen.mbt", strArray("freehand_cases", freehandCases()));
+  },
+
   async jsnum() {
     const hypot = binaryCases(function hypot(a, b) { return Math.hypot(a, b); }, 5000, (r) => [scaled(r), scaled(r)]);
     const atan2 = binaryCases(function atan2(a, b) { return Math.atan2(a, b); }, 5000, (r) => [scaled(r), scaled(r)]);

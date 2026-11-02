@@ -1,0 +1,10 @@
+import {
+  "sayoi7799/moon_rough/jsmath",
+  "sayoi7799/moon_excalidraw/internal/jsnum",
+  "moonbitlang/core/cmp",
+}
+
+import {
+  "sayoi7799/moon_excalidraw/internal/conform",
+  "sayoi7799/moon_excalidraw/internal/fixtures",
+} for "test"
