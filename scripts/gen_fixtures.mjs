@@ -120,6 +120,15 @@ const suites = {
     await suite("single_basic", singleBasic());
   },
 
+  async fonts() {
+    const { fontScenes } = await import("./cases_fonts.mjs");
+    await suite("fonts", fontScenes());
+  },
+
+  async fontFaces() {
+    await (await import("./gen_font_table.mjs")).writeFontTable();
+  },
+
   async singleMisc() {
     const { miscScenes } = await import("./cases_misc.mjs");
     await suite("single_misc", miscScenes());

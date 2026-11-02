@@ -105,7 +105,6 @@ pub fn export_to_svg(
   on_unsupported~ : UnsupportedPolicy = SkipWithWarning,
   measure_text? : (String, String) -> Double,
 ) -> ExportResult raise ExportError {
-  ignore(fonts)
   let measure = measure_text.unwrap_or(default_measure)
   let warnings = []
   let elements = check_elements(scene.elements, on_unsupported, warnings)
@@ -153,7 +152,19 @@ pub fn export_to_svg(
   }
   let style = @svg.Node::element("style")
   style.set("class", "style-fonts")
-  style.append(@svg.Node::text("\n      "))
+  let declarations = match fonts {
+    Url =>
+      @text.font_face_declarations(
+        elements.filter_map(fn(e) {
+          match e.kind {
+            Text(t) => Some((t.font_family, t.original_text))
+            _ => None
+          }
+        }),
+      )
+    None => []
+  }
+  style.append(@svg.Node::text("\n      " + declarations.join("\n      ")))
   defs.append(style)
   if scene.export_background && scene.view_background_color != "" {
     let rect = @svg.Node::element("rect")

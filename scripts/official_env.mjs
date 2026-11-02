@@ -70,8 +70,15 @@ function installDom() {
   }
   Object.defineProperty(g, "navigator", { value: dom.window.navigator, configurable: true });
   g.Path2D = g.window.Path2D = class { constructor(d) { this.d = d; } };
+  // A browser's FontFace has unicodeRange U+0-10FFFF unless a face says otherwise;
+  // the official code reads it, so the stub must have it. Every face is recorded,
+  // which is how scripts/gen_fixtures.mjs learns the font table.
+  g.__fontFaces = [];
   g.FontFace = g.window.FontFace = class {
-    constructor(family, src, desc) { Object.assign(this, { family, src, ...desc }); }
+    constructor(family, src, desc) {
+      Object.assign(this, { family, src, unicodeRange: "U+0-10FFFF", ...desc });
+      g.__fontFaces.push(this);
+    }
     load() { return Promise.resolve(this); }
   };
   document.fonts = { add() {}, has() { return false; }, check() { return true; }, load: async () => [], ready: Promise.resolve(), addEventListener() {}, removeEventListener() {} };

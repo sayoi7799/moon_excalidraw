@@ -2,6 +2,12 @@
 package "sayoi7799/moon_excalidraw/text"
 
 // Values
+pub let cjk_ranges : Array[Int32]
+
+pub fn font_face_declarations(Array[(Int32, String)]) -> Array[String]
+
+pub let font_face_table : Array[FaceData]
+
 pub fn font_family_string(Int32) -> String
 
 pub fn is_rtl(String) -> Bool
@@ -15,6 +21,12 @@ pub fn vertical_offset(Int32, Double, Double) -> Double
 // Errors
 
 // Types and methods
+pub(all) struct FaceData {
+  family : String
+  font : Int32
+  url : String
+  ranges : Array[Int32]
+}
 
 // Type aliases
 

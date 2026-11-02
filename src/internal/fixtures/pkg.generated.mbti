@@ -6,6 +6,8 @@ pub let atan2_cases : Array[String]
 
 pub let cube_cases : Array[String]
 
+pub let fonts : Array[SceneCase]
+
 pub let freehand_cases : Array[String]
 
 pub let hypot_cases : Array[String]
