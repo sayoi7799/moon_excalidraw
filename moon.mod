@@ -16,4 +16,8 @@ source = "src"
 
 preferred_target = "js"
 
+import {
+  "sayoi7799/moon_rough@0.2.1",
+}
+
 warnings = "-implicit_impl_as_method"
