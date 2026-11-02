@@ -75,7 +75,7 @@ fn check_elements(
     }
     seen[e.id] = true
     if e.seed == 0 &&
-      !(e.kind is (@model.Text(_) | Image(_) | Frame(_) | MagicFrame(_))) {
+      e.kind is (@model.Rectangle | Diamond | Ellipse | Line(_) | Arrow(_)) {
       warnings.push({
         element_id: Some(e.id),
         message: "seed 0 is random in the official export, so this shape won't match it",
@@ -106,14 +106,30 @@ pub fn export_to_svg(
   measure_text? : (String, String) -> Double,
 ) -> ExportResult raise ExportError {
   ignore(fonts)
-  ignore(measure_text)
+  let measure = measure_text.unwrap_or(default_measure)
   let warnings = []
   let elements = check_elements(scene.elements, on_unsupported, warnings)
+  // Frame titles become text elements of their own.
+  let for_render = add_frame_labels(elements, measure)
+  let frame_ids = {}
+  for e in for_render {
+    if is_frame(e) {
+      frame_ids[e.id] = true
+    }
+  }
+  // Elements inside a frame don't widen the canvas; the frame does.
+  let roots = for_render.filter(fn(e) {
+    is_frame(e) ||
+    (match e.frame_id {
+      Some(id) => !frame_ids.contains(id)
+      None => true
+    })
+  })
   let cache = @shape.ShapeCache::new()
   let (min_x, min_y, max_x, max_y) = @shape.common_bounds(
     cache,
-    elements,
-    element_map(elements),
+    roots,
+    element_map(roots),
   )
   let width = (min_x - max_x).abs() + EXPORT_PADDING * 2.0
   let height = (min_y - max_y).abs() + EXPORT_PADDING * 2.0
@@ -129,6 +145,12 @@ pub fn export_to_svg(
   root.append(@svg.Node::element("metadata"))
   let defs = @svg.Node::element("defs")
   root.append(defs)
+  let all = element_map(elements)
+  for e in elements {
+    if is_frame(e) {
+      defs.append(frame_clip_path(cache, e, all, offset_x, offset_y))
+    }
+  }
   let style = @svg.Node::element("style")
   style.set("class", "style-fonts")
   style.append(@svg.Node::text("\n      "))
@@ -142,12 +164,15 @@ pub fn export_to_svg(
     rect.set("fill", scene.view_background_color)
     root.append(rect)
   }
-  render_scene(elements, root, {
+  render_scene(for_render, root, {
     offset_x,
     offset_y,
     canvas_background: scene.view_background_color,
     warnings,
     cache,
+    defs,
+    files: scene.files,
+    symbols: {},
   })
   { svg: root.to_html(), warnings, }
 }

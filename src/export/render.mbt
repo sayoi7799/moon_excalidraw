@@ -11,6 +11,21 @@ priv struct RenderContext {
   canvas_background : String
   warnings : Array[Warning]
   cache : @shape.ShapeCache
+  defs : @svg.Node
+  files : Map[String, @model.FileData]
+  /// Ids of the image symbols written so far.
+  symbols : Map[String, Bool]
+}
+
+///|
+/// Where an element goes: its offset, rotation, and the numbers derived from them.
+priv struct Placement {
+  offset_x : Double
+  offset_y : Double
+  degree : Double
+  cx : Double
+  cy : Double
+  opacity : Double
 }
 
 ///|
@@ -91,6 +106,54 @@ fn set_opacity(node : @svg.Node, opacity : Double) -> Unit {
 }
 
 ///|
+/// `getContainingFrame`. Upstream takes whatever element the id names, a frame
+/// or not.
+fn containing_frame(
+  e : @model.Element,
+  map : Map[String, @model.Element],
+) -> @model.Element? {
+  match e.frame_id {
+    Some(id) => map.get(id)
+    None => None
+  }
+}
+
+///|
+/// `maybeWrapNodesInFrameClipPath`: elements in a frame are drawn inside a group
+/// clipped to it.
+fn wrap_in_frame_clip(
+  e : @model.Element,
+  map : Map[String, @model.Element],
+  nodes : Array[@svg.Node],
+) -> @svg.Node? {
+  match containing_frame(e, map) {
+    Some(frame) => {
+      let g = @svg.Node::element("g")
+      g.set("clip-path", "url(#\{frame.id})")
+      for node in nodes {
+        g.append(node)
+      }
+      Some(g)
+    }
+    None => None
+  }
+}
+
+///|
+/// Adds a node to the root, inside the clip group when it has one.
+fn add_wrapped(
+  e : @model.Element,
+  map : Map[String, @model.Element],
+  root : @svg.Node,
+  node : @svg.Node,
+) -> Unit {
+  match wrap_in_frame_clip(e, map, [node]) {
+    Some(g) => root.append(g)
+    None => root.append(node)
+  }
+}
+
+///|
 fn render_element(
   e : @model.Element,
   map : Map[String, @model.Element],
@@ -130,7 +193,20 @@ fn render_element(
     _ => (cx, cy, offset_x, offset_y)
   }
   let degree = 180.0 * e.angle / @jsmath.PI
-  let opacity = 100.0 * e.opacity / 10000.0
+  // An element with a link is drawn inside an <a>.
+  let mut root = svg_root
+  let in_anchor = e.link is Some(_)
+  if e.link is Some(link) {
+    let anchor = @svg.Node::element("a")
+    anchor.set("href", @model.normalize_link(link))
+    root.append(anchor)
+    root = anchor
+  }
+  let frame_opacity = match containing_frame(e, map) {
+    Some(frame) => frame.opacity
+    None => 100.0
+  }
+  let opacity = frame_opacity * e.opacity / 10000.0
   match e.kind {
     Rectangle | Diamond | Ellipse => {
       let shapes = @shape.generate(e, ctx.canvas_background)
@@ -138,7 +214,7 @@ fn render_element(
       set_opacity(node, opacity)
       node.set("stroke-linecap", "round")
       set_transform(node, offset_x, offset_y, degree, cx, cy)
-      svg_root.append(node)
+      add_wrapped(e, map, root, node)
     }
     Text(t) => {
       let node = @svg.Node::element("g")
@@ -177,7 +253,7 @@ fn render_element(
         text.set("dominant-baseline", "alphabetic")
         node.append(text)
       }
-      svg_root.append(node)
+      add_wrapped(e, map, root, node)
     }
     Line(l) | Arrow(l) => {
       let mask = @svg.Node::element("mask")
@@ -222,10 +298,52 @@ fn render_element(
         }
         group.append(node)
       }
-      svg_root.append(group)
-      svg_root.append(mask)
+      match wrap_in_frame_clip(e, map, [group, mask]) {
+        Some(g) => root.append(g)
+        None => {
+          root.append(group)
+          root.append(mask)
+        }
+      }
     }
-    _ => ()
+    Freedraw(_) => {
+      let shapes = @shape.generate(e, ctx.canvas_background)
+      let node = if shapes.length() > 0 {
+        draw_rough(shapes[0])
+      } else {
+        @svg.Node::element("g")
+      }
+      set_opacity(node, opacity)
+      set_transform(node, offset_x, offset_y, degree, cx, cy)
+      node.set("stroke", "none")
+      let path = @svg.Node::element("path")
+      path.set("fill", e.stroke_color)
+      path.set("d", @shape.freedraw_path(e))
+      node.append(path)
+      add_wrapped(e, map, root, node)
+    }
+    Image(img) =>
+      render_image(e, img, map, root, in_anchor, ctx, {
+        offset_x,
+        offset_y,
+        degree,
+        cx,
+        cy,
+        opacity,
+      })
+    Frame(_) | MagicFrame(_) => {
+      let rect = @svg.Node::element("rect")
+      set_transform(rect, offset_x, offset_y, degree, cx, cy)
+      rect.set("width", @svg.num(e.width) + "px")
+      rect.set("height", @svg.num(e.height) + "px")
+      rect.set("rx", FRAME_RADIUS)
+      rect.set("ry", FRAME_RADIUS)
+      rect.set("fill", "none")
+      rect.set("stroke", "#bbb")
+      rect.set("stroke-width", "2")
+      root.append(rect)
+    }
+    Unsupported(_) => ()
   }
 }
 
@@ -262,7 +380,7 @@ fn render_scene(
       _ =>
         ctx.warnings.push({
           element_id: Some(e.id),
-          message: "skipped: its shape has invalid path data",
+          message: "skipped: its shape could not be drawn",
         })
     }
   }

@@ -3,10 +3,18 @@ package "sayoi7799/moon_excalidraw/export"
 
 import {
   "sayoi7799/moon_excalidraw/model",
+  "sayoi7799/moon_excalidraw/shape",
+  "sayoi7799/moon_excalidraw/svg",
 }
 
 // Values
+pub fn add_frame_labels(Array[@model.Element], (String, String) -> Double) -> Array[@model.Element]
+
 pub fn export_to_svg(@model.Scene, fonts? : FontMode, on_unsupported? : UnsupportedPolicy, measure_text? : (String, String) -> Double) -> ExportResult raise ExportError
+
+pub fn frame_clip_path(@shape.ShapeCache, @model.Element, Map[String, @model.Element], Double, Double) -> @svg.Node
+
+pub fn is_frame(@model.Element) -> Bool
 
 // Errors
 pub suberror ExportError {

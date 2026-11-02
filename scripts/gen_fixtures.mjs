@@ -120,6 +120,11 @@ const suites = {
     await suite("single_basic", singleBasic());
   },
 
+  async singleMisc() {
+    const { miscScenes } = await import("./cases_misc.mjs");
+    await suite("single_misc", miscScenes());
+  },
+
   async singleText() {
     const { textScenes } = await import("./cases_text.mjs");
     await suite("single_text", textScenes());

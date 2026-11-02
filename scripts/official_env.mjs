@@ -119,7 +119,7 @@ export async function exportScene(scene, { fonts = "none" } = {}) {
   console.error = () => {};
   try {
     if (fonts === "none") options.skipInliningFonts = true;
-    return (await exportToSvg(options)).outerHTML;
+    return (await exportToSvg(options)).outerHTML.toWellFormed();
   } finally {
     console.error = quiet;
     setFetchFails(false);

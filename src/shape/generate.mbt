@@ -56,6 +56,7 @@ pub fn generate(
 ) -> Array[@moon_rough.Drawable] raise {
   let gen = @moon_rough.generator()
   match e.kind {
+    Freedraw({ points, .. }) => freedraw_fill(e, points)
     Line({ points, .. }) => [linear_curve(e, points)]
     Arrow({ points, start_arrowhead, end_arrowhead, .. }) => {
       let options = Ref::new(rough_options(e))

@@ -30,6 +30,11 @@ fn check_suite(name : String, cases : Array[@fixtures.SceneCase]) -> Unit raise 
 }
 
 ///|
+test "single misc match official" {
+  check_suite("single misc", @fixtures.single_misc)
+}
+
+///|
 test "single text match official" {
   check_suite("single text", @fixtures.single_text)
 }

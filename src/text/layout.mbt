@@ -27,7 +27,7 @@ pub fn split_lines(text : String) -> Array[String] {
 ///|
 /// The characters upstream's `RS_LTR_CHARS` matches, as UTF-16 code units, which
 /// is how the JavaScript regular expression sees the text. Surrogates fall in
-/// the Ⰰ-﬜ range, so emoji read as left-to-right.
+/// the U+2C00 to U+FB1C range, so emoji read as left-to-right.
 fn is_ltr_unit(u : Int32) -> Bool {
   (u >= 0x41 && u <= 0x5A) ||
   (u >= 0x61 && u <= 0x7A) ||
