@@ -31,8 +31,22 @@ pub fn absolute_coords(
   e : @model.Element,
   map : Map[String, @model.Element],
 ) -> (Double, Double, Double, Double, Double, Double) {
-  ignore(map)
   match e.kind {
+    Text({ container_id: Some(id), .. }) =>
+      match map.get(id) {
+        Some({ kind: Arrow(_), .. } as container) => {
+          let (x, y) = bound_text_position(cache, container, e, map)
+          (
+            x,
+            y,
+            x + e.width,
+            y + e.height,
+            x + e.width / 2.0,
+            y + e.height / 2.0,
+          )
+        }
+        _ => plain_coords(e)
+      }
     Freedraw({ points, .. }) => {
       let (min_x, min_y, max_x, max_y) = points_bounds(points)
       let x1 = min_x + e.x
@@ -42,16 +56,22 @@ pub fn absolute_coords(
       (x1, y1, x2, y2, (x1 + x2) / 2.0, (y1 + y2) / 2.0)
     }
     Line(_) | Arrow(_) => linear_absolute_coords(cache, e)
-    _ =>
-      (
-        e.x,
-        e.y,
-        e.x + e.width,
-        e.y + e.height,
-        e.x + e.width / 2.0,
-        e.y + e.height / 2.0,
-      )
+    _ => plain_coords(e)
   }
+}
+
+///|
+fn plain_coords(
+  e : @model.Element,
+) -> (Double, Double, Double, Double, Double, Double) {
+  (
+    e.x,
+    e.y,
+    e.x + e.width,
+    e.y + e.height,
+    e.x + e.width / 2.0,
+    e.y + e.height / 2.0,
+  )
 }
 
 ///|
@@ -70,7 +90,7 @@ pub fn element_bounds(
       let (min_x, min_y, max_x, max_y) = points_bounds(rotated)
       (min_x + e.x, min_y + e.y, max_x + e.x, max_y + e.y)
     }
-    Line(_) | Arrow(_) => linear_rotated_bounds(e, cx, cy)
+    Line(_) | Arrow(_) => linear_rotated_bounds(cache, e, cx, cy, map)
     Diamond => {
       let (x11, y11) = rotate(cx, y1, cx, cy, e.angle)
       let (x12, y12) = rotate(cx, y2, cx, cy, e.angle)

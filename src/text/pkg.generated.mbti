@@ -1,0 +1,21 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sayoi7799/moon_excalidraw/text"
+
+// Values
+pub fn font_family_string(Int32) -> String
+
+pub fn is_rtl(String) -> Bool
+
+pub fn line_height(Int32) -> Double
+
+pub fn split_lines(String) -> Array[String]
+
+pub fn vertical_offset(Int32, Double, Double) -> Double
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

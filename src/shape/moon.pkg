@@ -3,5 +3,6 @@ import {
   "sayoi7799/moon_rough/jsmath",
   "sayoi7799/moon_excalidraw/model",
   "sayoi7799/moon_excalidraw/svg",
+  "sayoi7799/moon_excalidraw/text",
   "sayoi7799/moon_excalidraw/internal/jsnum",
 }

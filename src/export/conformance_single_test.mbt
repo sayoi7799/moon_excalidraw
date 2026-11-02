@@ -24,9 +24,14 @@ fn check_suite(name : String, cases : Array[@fixtures.SceneCase]) -> Unit raise 
   let stats = @conform.run(name, cases, render)
   println("[conformance] \{stats}")
   if stats.failed > 0 {
-    println("  failing: \{stats.failures}")
+    println("  failing: " + stats.failures.join(", "))
   }
   assert_eq(stats.failed, 0)
+}
+
+///|
+test "single text match official" {
+  check_suite("single text", @fixtures.single_text)
 }
 
 ///|

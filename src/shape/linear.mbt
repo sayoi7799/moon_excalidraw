@@ -188,12 +188,250 @@ fn linear_absolute_coords(
 }
 
 ///|
-/// `getLinearElementRotatedBounds`, for an element without a bound label.
+/// `getLinearElementRotatedBounds`.
 fn linear_rotated_bounds(
+  cache : ShapeCache,
   e : @model.Element,
   cx : Double,
   cy : Double,
+  map : Map[String, @model.Element],
 ) -> (Double, Double, Double, Double) {
   let ops = curve_path_ops(linear_curve(e, linear_points(e)))
-  curve_ops_bounds(ops, fn(p) { rotate(e.x + p.0, e.y + p.1, cx, cy, e.angle) })
+  let bounds = curve_ops_bounds(ops, fn(p) {
+    rotate(e.x + p.0, e.y + p.1, cx, cy, e.angle)
+  })
+  match bound_text(e, map) {
+    Some(text) => bounds_with_text(cache, e, map, bounds, text)
+    None => bounds
+  }
+}
+
+///|
+/// `getBoundTextElement`: the first text bound to a container.
+pub fn bound_text(
+  e : @model.Element,
+  map : Map[String, @model.Element],
+) -> @model.Element? {
+  for b in e.bound_elements {
+    if b.kind == "text" {
+      return map.get(b.id)
+    }
+  }
+  None
+}
+
+///|
+fn point_global(
+  cache : ShapeCache,
+  e : @model.Element,
+  p : (Double, Double),
+  map : Map[String, @model.Element],
+) -> (Double, Double) {
+  let (x1, y1, x2, y2, _, _) = absolute_coords(cache, e, map)
+  rotate(e.x + p.0, e.y + p.1, (x1 + x2) / 2.0, (y1 + y2) / 2.0, e.angle)
+}
+
+///|
+/// `getControlPointsForBezierCurve`: the Bézier segment ending closest to
+/// `end_point`. Upstream generates the shape here, which fills its cache.
+fn control_points(
+  cache : ShapeCache,
+  e : @model.Element,
+  end_point : (Double, Double),
+) -> Array[(Double, Double)]? {
+  cache.mark(e)
+  let mut current = (0.0, 0.0)
+  let mut min_distance = @double.infinity
+  let mut result = None
+  for op in curve_path_ops(linear_curve(e, linear_points(e))) {
+    match op {
+      Move(x, y) => current = (x, y)
+      BCurveTo(x1, y1, x2, y2, x3, y3) => {
+        let d = @jsnum.hypot(x3 - end_point.0, y3 - end_point.1)
+        if d < min_distance {
+          min_distance = d
+          result = Some([current, (x1, y1), (x2, y2), (x3, y3)])
+        }
+        current = (x3, y3)
+      }
+      LineTo(_, _) => ()
+    }
+  }
+  result
+}
+
+///|
+/// `getBezierXY`. Note that the weights are listed from the end point back.
+fn bezier_xy(cp : Array[(Double, Double)], t : Double) -> (Double, Double) {
+  let u = 1.0 - t
+  let eq = fn(p0 : Double, p1 : Double, p2 : Double, p3 : Double) {
+    @jsnum.cube(u) * p3 +
+    3.0 * t * (u * u) * p2 +
+    3.0 * (t * t) * u * p1 +
+    p0 * @jsnum.cube(t)
+  }
+  (
+    eq(cp[0].0, cp[1].0, cp[2].0, cp[3].0),
+    eq(cp[0].1, cp[1].1, cp[2].1, cp[3].1),
+  )
+}
+
+///|
+/// `mapIntervalToBezierT`: the t that lies `interval` of the way along the
+/// curve's length, measured on 20 points of it.
+fn interval_to_t(
+  cp : Array[(Double, Double)],
+  end_point : (Double, Double),
+  interval : Double,
+) -> Double {
+  let points = []
+  let mut t = 1.0
+  while t > 0.0 {
+    points.push(bezier_xy(cp, t))
+    t -= 0.05
+  }
+  let last = points[points.length() - 1]
+  if (last.0 - end_point.0).abs() < 10.0e-5 &&
+    (last.1 - end_point.1).abs() < 10.0e-5 {
+    points.push(end_point)
+  }
+  let arc_lengths = [0.0]
+  let mut distance = 0.0
+  for i in 0..<(points.length() - 1) {
+    distance += @jsnum.hypot(
+      points[i].0 - points[i + 1].0,
+      points[i].1 - points[i + 1].1,
+    )
+    arc_lengths.push(distance)
+  }
+  let count = arc_lengths.length() - 1
+  let target = interval * arc_lengths[count]
+  let mut low = 0
+  let mut high = count
+  let mut index = 0
+  while low < high {
+    index = low + (high - low) / 2
+    if arc_lengths[index] < target {
+      low = index + 1
+    } else {
+      high = index
+    }
+  }
+  if arc_lengths[index] > target {
+    index -= 1
+  }
+  if arc_lengths[index] == target {
+    return index.to_double() / count.to_double()
+  }
+  1.0 -
+  (
+    index.to_double() +
+    (target - arc_lengths[index]) /
+    (arc_lengths[index + 1] - arc_lengths[index])
+  ) /
+  count.to_double()
+}
+
+///|
+/// `getSegmentMidPoint`: the middle of a segment, or for a curve the point half
+/// way along its length.
+fn segment_mid_point(
+  cache : ShapeCache,
+  e : @model.Element,
+  points : Array[(Double, Double)],
+  start : (Double, Double),
+  end : (Double, Double),
+  end_index : Int32,
+  map : Map[String, @model.Element],
+) -> (Double, Double) {
+  if points.length() > 2 && e.roundness is Some(_) {
+    let end_point = points[end_index]
+    if control_points(cache, e, end_point) is Some(cp) {
+      let t = interval_to_t(cp, end_point, 0.5)
+      return point_global(cache, e, bezier_xy(cp, t), map)
+    }
+  }
+  ((start.0 + end.0) / 2.0, (start.1 + end.1) / 2.0)
+}
+
+///|
+/// `LinearElementEditor.getBoundTextElementPosition`: a label sits on the middle
+/// point, or on the middle of the middle segment.
+pub fn bound_text_position(
+  cache : ShapeCache,
+  e : @model.Element,
+  text : @model.Element,
+  map : Map[String, @model.Element],
+) -> (Double, Double) {
+  let points = linear_points(e)
+  let (x1, y1, x2, y2, _, _) = absolute_coords(cache, e, map)
+  let cx = (x1 + x2) / 2.0
+  let cy = (y1 + y2) / 2.0
+  let global = points.map(fn(p) {
+    rotate(e.x + p.0, e.y + p.1, cx, cy, e.angle)
+  })
+  let mid = if points.length() % 2 == 1 {
+    point_global(cache, e, points[points.length() / 2], map)
+  } else {
+    let index = points.length() / 2 - 1
+    segment_mid_point(
+      cache,
+      e,
+      points,
+      global[index],
+      global[index + 1],
+      index + 1,
+      map,
+    )
+  }
+  (mid.0 - text.width / 2.0, mid.1 - text.height / 2.0)
+}
+
+///|
+/// `getMinMaxXYWithBoundText`: grows a line's box to contain its label.
+fn bounds_with_text(
+  cache : ShapeCache,
+  e : @model.Element,
+  map : Map[String, @model.Element],
+  bounds : (Double, Double, Double, Double),
+  text : @model.Element,
+) -> (Double, Double, Double, Double) {
+  let (bx1, by1, bx2, by2) = bounds
+  let mut x1 = bx1
+  let mut y1 = by1
+  let mut x2 = bx2
+  let mut y2 = by2
+  let cx = (x1 + x2) / 2.0
+  let cy = (y1 + y2) / 2.0
+  let (tx1, ty1) = bound_text_position(cache, e, text, map)
+  let tx2 = tx1 + text.width
+  let ty2 = ty1 + text.height
+  let top_left = rotate(x1, y1, cx, cy, e.angle)
+  let top_right = rotate(x2, y1, cx, cy, e.angle)
+  let tl = rotate(tx1, ty1, cx, cy, -e.angle)
+  let tr = rotate(tx2, ty1, cx, cy, -e.angle)
+  let bl = rotate(tx1, ty2, cx, cy, -e.angle)
+  let br = rotate(tx2, ty2, cx, cy, -e.angle)
+  if top_left.0 < top_right.0 && top_left.1 >= top_right.1 {
+    x1 = @jsmath.min(x1, bl.0)
+    x2 = @jsmath.max(x2, @jsmath.max(tr.0, br.0))
+    y1 = @jsmath.min(y1, tl.1)
+    y2 = @jsmath.max(y2, br.1)
+  } else if top_left.0 >= top_right.0 && top_left.1 > top_right.1 {
+    x1 = @jsmath.min(x1, br.0)
+    x2 = @jsmath.max(x2, @jsmath.max(tl.0, tr.0))
+    y1 = @jsmath.min(y1, bl.1)
+    y2 = @jsmath.max(y2, tr.1)
+  } else if top_left.0 >= top_right.0 {
+    x1 = @jsmath.min(x1, tr.0)
+    x2 = @jsmath.max(x2, bl.0)
+    y1 = @jsmath.min(y1, br.1)
+    y2 = @jsmath.max(y2, tl.1)
+  } else if top_left.1 <= top_right.1 {
+    x1 = @jsmath.min(x1, @jsmath.min(tr.0, tl.0))
+    x2 = @jsmath.max(x2, br.0)
+    y1 = @jsmath.min(y1, tr.1)
+    y2 = @jsmath.max(y2, bl.1)
+  }
+  (x1, y1, x2, y2)
 }

@@ -9,6 +9,10 @@ import {
 // Values
 pub fn absolute_coords(ShapeCache, @model.Element, Map[String, @model.Element]) -> (Double, Double, Double, Double, Double, Double)
 
+pub fn bound_text(@model.Element, Map[String, @model.Element]) -> @model.Element?
+
+pub fn bound_text_position(ShapeCache, @model.Element, @model.Element, Map[String, @model.Element]) -> (Double, Double)
+
 pub fn common_bounds(ShapeCache, Array[@model.Element], Map[String, @model.Element]) -> (Double, Double, Double, Double)
 
 pub fn corner_radius(Double, @model.Element) -> Double

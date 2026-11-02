@@ -102,6 +102,33 @@ fn render_element(
   let (x1, y1, x2, y2, _, _) = @shape.absolute_coords(ctx.cache, e, map)
   let cx = (x2 - x1) / 2.0 - (e.x - x1)
   let cy = (y2 - y1) / 2.0 - (e.y - y1)
+  // A label on an arrow sits where the arrow puts it, not where it is stored.
+  let (cx, cy, offset_x, offset_y) = match e.kind {
+    Text({ container_id: Some(id), .. }) =>
+      match map.get(id) {
+        Some({ kind: Arrow(_), .. } as container) => {
+          let (cx1, cy1, cx2, cy2, _, _) = @shape.absolute_coords(
+            ctx.cache,
+            container,
+            map,
+          )
+          let (bx, by) = @shape.bound_text_position(
+            ctx.cache,
+            container,
+            e,
+            map,
+          )
+          (
+            (cx2 - cx1) / 2.0 - (bx - cx1),
+            (cy2 - cy1) / 2.0 - (by - cy1),
+            offset_x + bx - e.x,
+            offset_y + by - e.y,
+          )
+        }
+        _ => (cx, cy, offset_x, offset_y)
+      }
+    _ => (cx, cy, offset_x, offset_y)
+  }
   let degree = 180.0 * e.angle / @jsmath.PI
   let opacity = 100.0 * e.opacity / 10000.0
   match e.kind {
@@ -113,9 +140,73 @@ fn render_element(
       set_transform(node, offset_x, offset_y, degree, cx, cy)
       svg_root.append(node)
     }
+    Text(t) => {
+      let node = @svg.Node::element("g")
+      set_opacity(node, opacity)
+      set_transform(node, offset_x, offset_y, degree, cx, cy)
+      let line_height_px = t.font_size * t.line_height
+      let horizontal = match t.text_align {
+        "center" => e.width / 2.0
+        "right" => e.width
+        _ => 0.0
+      }
+      let vertical = @text.vertical_offset(
+        t.font_family,
+        t.font_size,
+        line_height_px,
+      )
+      let rtl = @text.is_rtl(t.text)
+      let anchor = if t.text_align == "center" {
+        "middle"
+      } else if t.text_align == "right" || rtl {
+        "end"
+      } else {
+        "start"
+      }
+      for i, line in @text.split_lines(t.text) {
+        let text = @svg.Node::element("text")
+        text.append(@svg.Node::text(line))
+        text.set("x", @svg.num(horizontal))
+        text.set("y", @svg.num(i.to_double() * line_height_px + vertical))
+        text.set("font-family", @text.font_family_string(t.font_family))
+        text.set("font-size", @svg.num(t.font_size) + "px")
+        text.set("fill", e.stroke_color)
+        text.set("text-anchor", anchor)
+        text.set("style", "white-space: pre;")
+        text.set("direction", if rtl { "rtl" } else { "ltr" })
+        text.set("dominant-baseline", "alphabetic")
+        node.append(text)
+      }
+      svg_root.append(node)
+    }
     Line(l) | Arrow(l) => {
       let mask = @svg.Node::element("mask")
+      let bound = @shape.bound_text(e, map)
+      if bound is Some(text) {
+        let off_x = or_zero(offset_x)
+        let off_y = or_zero(offset_y)
+        mask.set("id", "mask-\{e.id}")
+        let visible = @svg.Node::element("rect")
+        visible.set("x", "0")
+        visible.set("y", "0")
+        visible.set("fill", "#fff")
+        visible.set("width", @svg.num(e.width + 100.0 + off_x))
+        visible.set("height", @svg.num(e.height + 100.0 + off_y))
+        mask.append(visible)
+        let hidden = @svg.Node::element("rect")
+        let (bx, by) = @shape.bound_text_position(ctx.cache, e, text, map)
+        hidden.set("x", @svg.num(off_x + bx - e.x))
+        hidden.set("y", @svg.num(off_y + by - e.y))
+        hidden.set("fill", "#000")
+        hidden.set("width", @svg.num(text.width))
+        hidden.set("height", @svg.num(text.height))
+        hidden.set("opacity", "1")
+        mask.append(hidden)
+      }
       let group = @svg.Node::element("g")
+      if bound is Some(_) {
+        group.set("mask", "url(#mask-\{e.id})")
+      }
       group.set("stroke-linecap", "round")
       let shapes = @shape.generate(e, ctx.canvas_background)
       ctx.cache.mark(e)
@@ -149,8 +240,25 @@ fn render_scene(
     if e.is_deleted {
       continue
     }
+    // A label is drawn right after the shape that holds it. A text whose
+    // container exists but doesn't list it is never drawn.
+    if e.kind is Text({ container_id: Some(id), .. }) && map.contains(id) {
+      continue
+    }
     // The official export logs a failing element and carries on without it.
-    render_element(e, map, root, e.x + ctx.offset_x, e.y + ctx.offset_y, ctx) catch {
+    try {
+      render_element(e, map, root, e.x + ctx.offset_x, e.y + ctx.offset_y, ctx)
+      if @shape.bound_text(e, map) is Some(text) {
+        render_element(
+          text,
+          map,
+          root,
+          text.x + ctx.offset_x,
+          text.y + ctx.offset_y,
+          ctx,
+        )
+      }
+    } catch {
       _ =>
         ctx.warnings.push({
           element_id: Some(e.id),

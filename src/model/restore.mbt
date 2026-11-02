@@ -45,18 +45,6 @@ fn font_family_by_name(name : StringView) -> Int32 {
 }
 
 ///|
-/// `FONT_METADATA[family].metrics.lineHeight`, Excalifont's for unknown ones.
-fn default_line_height(family : Int32) -> Double {
-  match family {
-    2 | 9 => 1.15
-    3 => 1.2
-    6 => 1.35
-    7 => 1.15
-    _ => 1.25
-  }
-}
-
-///|
 fn line_count(text : String) -> Int32 {
   let mut lines = 1
   let chars = text.to_array()
@@ -175,7 +163,7 @@ fn restore_text(f : Fields, height : Double) -> TextData raise ParseError {
           None => @double.not_a_number
         }
       } else {
-        default_line_height(raw_family.map(fn(v) { v.to_int() }).unwrap_or(-1))
+        @text.line_height(raw_family.map(fn(v) { v.to_int() }).unwrap_or(-1))
       }
   }
   let original = f.string("originalText").unwrap_or("")
