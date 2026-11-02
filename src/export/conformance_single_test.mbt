@@ -30,6 +30,16 @@ fn check_suite(name : String, cases : Array[@fixtures.SceneCase]) -> Unit raise 
 }
 
 ///|
+test "edge cases match official" {
+  check_suite("edge cases", @fixtures.edge)
+}
+
+///|
+test "combined scenes match official" {
+  check_suite("combined", @fixtures.combo)
+}
+
+///|
 test "font modes match official" {
   check_suite("fonts", @fixtures.fonts)
 }

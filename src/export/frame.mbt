@@ -33,7 +33,7 @@ fn default_measure(text : String, font : String) -> Double {
   for _ in text {
     n += 1
   }
-  n.to_double() * 0.5 * @jsmath.parse_float(font)
+  n.to_double() * 0.5 * @jsnum.parse_float(font)
 }
 
 ///|

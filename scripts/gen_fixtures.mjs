@@ -3,6 +3,12 @@
 import { hex, rng, str, strArray, writeGen, writeSceneSuite } from "./mbt.mjs";
 
 const canonNaN = (x) => (Number.isNaN(x) ? NaN : x);
+
+/** `parseFloat` inputs, each as a JSON string literal and the bit pattern of the result. */
+function parseFloatCases() {
+  const inputs = ["14", "14px", "14px a", "14px Helvetica, Segoe UI Emoji", "14.5px", "2e3x", "-3.5abc", ".5", "-.5e-2z", "1e", "1e+", "1e+5", "1E5", "  7 ", "\t\n 8", "abc", "", " ", "-", "+", "+3", "--3", ".", "-.", "5.", "5.e2", "Infinityx", "-Infinity", "+Infinity", "infinity", "NaN", "0x10", "0b1", "1_000", "1,5", "００", "١٢", "9007199254740993", "1e400", "-1e400", "1e-400", "0.1", "123456789012345678901234567890", "00012", "-0", " 5", "﻿5", "5e", "5e-", "5e+x"];
+  return inputs.map((s) => `${JSON.stringify(s)}|${hex(canonNaN(parseFloat(s)))}`);
+}
 const specials = [0, -0, 1, -1, 2, 0.5, 3, NaN, Infinity, -Infinity, 1e-300, -1e-300, 1e300, -1e300, 5e-324, 1.7976931348623157e308];
 
 /** Inputs for a two-argument math function: specials, then random values. */
@@ -120,6 +126,16 @@ const suites = {
     await suite("single_basic", singleBasic());
   },
 
+  async edge() {
+    const { edgeScenes } = await import("./cases_edge.mjs");
+    await suite("edge", edgeScenes());
+  },
+
+  async combo() {
+    const { comboScenes } = await import("./cases_combo.mjs");
+    await suite("combo", await comboScenes());
+  },
+
   async fonts() {
     const { fontScenes } = await import("./cases_fonts.mjs");
     await suite("fonts", fontScenes());
@@ -157,7 +173,7 @@ const suites = {
     }
     writeGen(
       "src/internal/fixtures/jsnum_gen.mbt",
-      strArray("hypot_cases", hypot) + "\n" + strArray("atan2_cases", atan2) + "\n" + strArray("cube_cases", cube),
+      strArray("hypot_cases", hypot) + "\n" + strArray("atan2_cases", atan2) + "\n" + strArray("cube_cases", cube) + "\n" + strArray("parse_float_cases", parseFloatCases()),
     );
   },
 };

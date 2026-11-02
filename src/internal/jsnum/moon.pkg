@@ -6,4 +6,5 @@ import {
 import {
   "sayoi7799/moon_excalidraw/internal/conform",
   "sayoi7799/moon_excalidraw/internal/fixtures",
+  "moonbitlang/core/json",
 } for "test"

@@ -8,6 +8,8 @@ pub fn cube(Double) -> Double
 
 pub fn hypot(Double, Double) -> Double
 
+pub fn parse_float(String) -> Double
+
 // Errors
 
 // Types and methods

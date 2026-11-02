@@ -4,7 +4,11 @@ package "sayoi7799/moon_excalidraw/internal/fixtures"
 // Values
 pub let atan2_cases : Array[String]
 
+pub let combo : Array[SceneCase]
+
 pub let cube_cases : Array[String]
+
+pub let edge : Array[SceneCase]
 
 pub let fonts : Array[SceneCase]
 
@@ -13,6 +17,8 @@ pub let freehand_cases : Array[String]
 pub let hypot_cases : Array[String]
 
 pub let link_cases : Array[(String, String)]
+
+pub let parse_float_cases : Array[String]
 
 pub let restore_cases : Array[RestoreCase]
 
