@@ -163,7 +163,7 @@ fixtures 的来源：`scripts/package-lock.json` 锁定 `@excalidraw/excalidraw`
 
 验证过 jsdom 的输出和真实 Chromium 一致：21 个覆盖所有元素类型的场景逐字节相同（`scripts/browser_check.mjs`）。
 
-CI 见 [.github/workflows/ci.yml](.github/workflows/ci.yml)。
+CI 见 [.github/workflows/check.yml](.github/workflows/check.yml)：在 Linux、macOS、Windows 上跑 `moon check --deny-warn`、`moon build`、`moon test`（都带 `--target all`）、`moon fmt --check`，再确认 `moon info` 之后 `git diff` 为空；另有一个 job 安装 Node，重新生成 fixtures 并要求和仓库里的完全一致，同时检查 README 的对照表。Node 版本固定在 [scripts/.nvmrc](scripts/.nvmrc)（24.20.0），因为 `containsCJK` 的字符集随 Node 的 Unicode 版本而定。
 
 ### 依赖 moon_rough 的未发布版本
 

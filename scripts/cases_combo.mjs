@@ -219,7 +219,9 @@ export async function comboScenes() {
   // Scenes drawn in the real editor, kept as the files the editor wrote.
   const dir = join(root, "fixtures", "scenes");
   for (const file of readdirSync(dir).filter((f) => f.endsWith(".excalidraw")).sort()) {
-    const raw = readFileSync(join(dir, file), "utf8");
+    // Line endings follow the checkout (git may turn \n into \r\n on Windows), and
+    // the fixture embeds the text, so make them the same everywhere.
+    const raw = readFileSync(join(dir, file), "utf8").replace(/\r\n/g, "\n");
     cases.push({ name: `real/${file}`, scene: JSON.parse(raw), raw });
   }
   return cases;

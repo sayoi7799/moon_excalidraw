@@ -1,0 +1,116 @@
+# Based on the "Check and Test" template of moonbit-community/.github, with a
+# build step, a format check, and a job that regenerates the test fixtures.
+name: Check and Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: install-unix
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: install-windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser; irm https://cli.moonbitlang.com/install/powershell.ps1 | iex
+          "C:\Users\runneradmin\.moon\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: post install
+        run: |
+          moon version --all
+          moon update
+
+      - name: moon check
+        run: moon check --deny-warn --target all
+
+      - name: moon build
+        run: moon build --target all
+
+      - name: moon test
+        run: moon test --target all
+
+      - name: moon fmt
+        run: moon fmt --check
+
+      # Regenerating the interface files must not change them.
+      - name: moon info
+        run: |
+          moon info
+          git diff --exit-code
+
+  fixtures:
+    # The expected outputs come from the pinned official packages. Regenerating
+    # them must give exactly the committed files, and the README table must be
+    # the one the tests print.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: install-moon
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: post install
+        run: |
+          moon version --all
+          moon update
+
+      # The CJK character table follows the Unicode version of this Node, so its
+      # version is pinned in scripts/.nvmrc.
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: scripts/.nvmrc
+          cache: npm
+          cache-dependency-path: scripts/package-lock.json
+
+      - name: install the pinned official packages
+        working-directory: scripts
+        run: npm ci
+
+      - name: regenerate the fixtures
+        working-directory: scripts
+        run: node gen_fixtures.mjs
+
+      # The generated .mbt files are committed formatted.
+      - name: moon fmt
+        run: moon fmt
+
+      - name: fixtures are unchanged
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain -- src fixtures)"
+
+      - name: README table is up to date
+        run: node scripts/update_readme_stats.mjs --check
