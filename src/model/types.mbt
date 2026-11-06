@@ -120,6 +120,7 @@ pub(all) struct Scene {
 }
 
 ///|
+#derive(Debug)
 pub suberror ParseError {
   /// The text isn't valid JSON.
   InvalidJson(String)
@@ -127,7 +128,7 @@ pub suberror ParseError {
   NotAScene(String)
   /// An element with this id has an unusable field, described by the message.
   InvalidElement(String, String)
-} derive(Debug)
+}
 
 ///|
 pub impl Show for ParseError with fn output(self, logger) {

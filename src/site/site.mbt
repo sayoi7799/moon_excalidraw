@@ -52,9 +52,9 @@ fn safe_file_name(name : String) -> String {
 /// The name without `.excalidraw` or `.json`.
 fn stem_of(name : String) -> String {
   if name.has_suffix(".excalidraw") {
-    name.view(end_offset=name.length() - ".excalidraw".length()).to_owned()
+    name.clamped_view(end=name.length() - ".excalidraw".length()).to_owned()
   } else if name.has_suffix(".json") {
-    name.view(end_offset=name.length() - ".json".length()).to_owned()
+    name.clamped_view(end=name.length() - ".json".length()).to_owned()
   } else {
     name
   }
@@ -112,9 +112,9 @@ fn url_segment(s : StringView) -> String {
 fn aspect_ratio(svg : String) -> String? {
   let marker = "viewBox=\"0 0 "
   guard svg.find(marker) is Some(start) else { return None }
-  let rest = svg.view(start_offset=start + marker.length())
+  let rest = svg.clamped_view(start=start + marker.length())
   guard rest.find("\"") is Some(end) else { return None }
-  let parts = rest.view(end_offset=end).to_owned().split(" ").collect()
+  let parts = rest.clamped_view(end~).to_owned().split(" ").collect()
   if parts.length() == 2 {
     Some("\{parts[0]} / \{parts[1]}")
   } else {

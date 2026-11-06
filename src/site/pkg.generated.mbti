@@ -14,9 +14,10 @@ pub fn parse_args(Array[String]) -> SiteOptions raise UsageError
 pub fn usage() -> String
 
 // Errors
+#derive(@debug.Debug)
 pub suberror UsageError {
   Usage(String)
-} derive(@debug.Debug)
+}
 pub impl Show for UsageError
 
 // Types and methods

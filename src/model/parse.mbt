@@ -90,7 +90,7 @@ fn parse_files(root : Map[String, Json]) -> Map[String, FileData] {
 /// the official editor does before it calls `exportToSvg`.
 pub fn parse_scene(text : StringView) -> Scene raise ParseError {
   let text = if text.has_prefix("\u{FEFF}") {
-    text.view(start_offset=1)
+    text.clamped_view(start=1)
   } else {
     text
   }

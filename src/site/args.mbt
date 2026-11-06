@@ -1,9 +1,10 @@
 // The command line of `excalidraw2site`.
 
 ///|
+#derive(Debug)
 pub suberror UsageError {
   Usage(String)
-} derive(Debug)
+}
 
 ///|
 pub impl Show for UsageError with fn output(self, logger) {
@@ -47,7 +48,7 @@ pub fn parse_args(args : Array[String]) -> SiteOptions raise UsageError {
       output = args[i + 1]
       i += 1
     } else if arg.has_prefix("--output=") {
-      output = arg.view(start_offset="--output=".length()).to_owned()
+      output = arg.clamped_view(start="--output=".length()).to_owned()
     } else if arg == "--title" {
       if i + 1 >= args.length() {
         raise Usage("--title needs some text")

@@ -18,12 +18,13 @@ pub fn same_bits(Double, Double) -> Bool
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) enum DiffKind {
   Identical
   Structural
   Attribute
   Numeric(Double)
-} derive(Eq, @debug.Debug)
+}
 
 pub(all) struct Stats {
   suite : String

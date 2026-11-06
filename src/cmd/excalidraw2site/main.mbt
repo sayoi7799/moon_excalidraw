@@ -48,7 +48,7 @@ fn read_diagrams(dir : String) -> Array[@site.Diagram] raise @fs.IOError {
 ///|
 fn parent_of(path : String) -> String {
   match path.rev_find("/") {
-    Some(i) => path.view(end_offset=i).to_owned()
+    Some(i) => path.clamped_view(end=i).to_owned()
     None => ""
   }
 }
