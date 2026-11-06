@@ -106,13 +106,13 @@ moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o exampl
 | Suite | What it covers | Scenes | Byte-identical | Different |
 |---|---|---:|---:|---:|
 | single basic | Rectangles, diamonds, ellipses × fill, stroke, roughness, roundness | 252 | 252 | 0 |
-| single linear | Lines, arrows, closed fills, all arrowhead styles | 341 | 341 | 0 |
+| single linear | Lines, arrows, closed fills, all arrowhead styles | 362 | 362 | 0 |
 | single text | Text: every font id, alignment, direction, bound to shapes and arrows | 200 | 200 | 0 |
 | single misc | Freedraw, images, frames, links | 78 | 78 | 0 |
 | fonts | Font rules (`FontMode::Url`) for each family and character set | 185 | 185 | 0 |
 | combined | Diagrams (editor API, hand-made, random, and 3 drawn in the real editor) | 55 | 55 | 0 |
 | edge cases | Empty and degenerate scenes, extreme numbers, old formats, official errors | 65 | 65 | 0 |
-| **Total** | | **1176** | **1176** | **0** |
+| **Total** | | **1197** | **1197** | **0** |
 
 | Lower-level check | Cases | Different |
 |---|---:|---:|
