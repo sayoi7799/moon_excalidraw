@@ -6,7 +6,14 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- `excalidraw2site`: turns a folder of `.excalidraw` files into a static website
+  (`index.html`, one SVG per diagram, a copy of each source). One bad file does not stop
+  the others; the command then exits with a non-zero code. The `site` package holds the
+  logic as `build_site`.
+- `examples/site`: four sample diagrams and a ready-to-copy GitHub Pages workflow that
+  rebuilds the site on every push.
 
 ## [0.1.0] - not yet published
 

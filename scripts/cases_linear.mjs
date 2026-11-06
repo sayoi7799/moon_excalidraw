@@ -55,6 +55,20 @@ export function singleLinear() {
     }
     add(`loop/arrow/${ln}`, "arrow", points, { backgroundColor: "#a5d8ff", roundness: { type: 2 } });
   }
+  // hachure-fill rotates a polygon's points in place and back, so the official
+  // element.points pick up rounding noise that later calculations read.
+  const square = [[0, 0], [100, 0], [100, 100], [0, 100], [0, 0]];
+  const wedge = [[0, 0], [100, 0], [100, 100], [0, 0]];
+  for (const fillStyle of ["hachure", "cross-hatch", "zigzag"]) {
+    for (const [pn, points] of [["wedge", wedge], ["square", square]]) {
+      for (const [x, y, seed] of [[0, 0, 12345], [7, 9, 100], [-31.5, 12.25, 777]]) {
+        add(`mutation/${fillStyle}/${pn}/${x},${y}/${seed}`, "line", points, { fillStyle, backgroundColor: "#a5d8ff", x, y, seed });
+      }
+    }
+  }
+  add("mutation/rotated", "line", square, { fillStyle: "hachure", backgroundColor: "#a5d8ff", angle: 0.7, seed: 5 });
+  add("mutation/thick", "line", square, { fillStyle: "cross-hatch", backgroundColor: "#a5d8ff", strokeWidth: 4, seed: 6 });
+  add("mutation/two-lines", "line", wedge, { fillStyle: "hachure", backgroundColor: "#ffc9c9", seed: 8 });
   const r = rng(11);
   const pick = (a) => a[Math.floor(r() * a.length)];
   for (let i = 0; i < 60; i++) {

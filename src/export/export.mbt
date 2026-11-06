@@ -5,24 +5,27 @@
 const EXPORT_PADDING : Double = 10.0
 
 ///|
+#derive(Eq, Debug)
 pub(all) enum FontMode {
   /// `@font-face` rules pointing at the official font files.
   Url
   /// No fonts, like the official `skipInliningFonts`.
   None
-} derive(Eq, Debug)
+}
 
 ///|
+#derive(Eq, Debug)
 pub(all) enum UnsupportedPolicy {
   Error
   SkipWithWarning
-} derive(Eq, Debug)
+}
 
 ///|
+#derive(Eq, Debug)
 pub(all) struct Warning {
   element_id : String?
   message : String
-} derive(Eq, Debug)
+}
 
 ///|
 pub(all) struct ExportResult {
@@ -31,10 +34,11 @@ pub(all) struct ExportResult {
 }
 
 ///|
+#derive(Debug)
 pub suberror ExportError {
   /// An element of this id can't be drawn, and the policy says to fail.
   Unsupported(String, String)
-} derive(Debug)
+}
 
 ///|
 pub impl Show for ExportError with fn output(self, logger) {

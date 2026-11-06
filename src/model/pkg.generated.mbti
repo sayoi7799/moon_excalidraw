@@ -13,11 +13,12 @@ pub fn normalize_link(String) -> String
 pub fn parse_scene(StringView) -> Scene raise ParseError
 
 // Errors
+#derive(@debug.Debug)
 pub suberror ParseError {
   InvalidJson(String)
   NotAScene(String)
   InvalidElement(String, String)
-} derive(@debug.Debug)
+}
 pub impl Show for ParseError
 
 // Types and methods

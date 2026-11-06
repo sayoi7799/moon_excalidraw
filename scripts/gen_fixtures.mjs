@@ -44,13 +44,16 @@ async function suite(name, cases) {
   const out = [];
   for (const c of cases) {
     const fonts = c.fonts ?? "none";
+    // The official export rotates hachure points in place, so the input is written
+    // down before it runs.
+    const input = c.raw ?? JSON.stringify(c.scene);
     let expected = null;
     try {
       expected = await exportScene(c.scene, { fonts });
     } catch {
       // The official code throws for this input: the case expects an error.
     }
-    out.push({ name: c.name, input: c.raw ?? JSON.stringify(c.scene), fonts, expected });
+    out.push({ name: c.name, input, fonts, expected });
   }
   writeSceneSuite(name, out);
 }

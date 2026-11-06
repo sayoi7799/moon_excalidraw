@@ -7,18 +7,32 @@
 /// from its points, with one it uses the real curve. So the coordinates depend
 /// on which shapes were generated before, and that history is part of the output.
 pub struct ShapeCache {
-  priv cached : Map[String, Bool]
+  priv shapes : Map[String, @moon_rough.Drawable]
 }
 
 ///|
 pub fn ShapeCache::new() -> ShapeCache {
-  { cached: {}, }
+  { shapes: Map([]), }
 }
 
 ///|
-/// Records that upstream's `ShapeCache.generateElementShape` ran for `e`.
-pub fn ShapeCache::mark(self : ShapeCache, e : @model.Element) -> Unit {
-  self.cached[e.id] = true
+/// Keeps the drawable upstream's `ShapeCache.generateElementShape` made for `e`.
+/// Later reads use it as it was drawn, not a fresh one made from the points as
+/// they are by then.
+pub fn ShapeCache::store(
+  self : ShapeCache,
+  e : @model.Element,
+  curve : @moon_rough.Drawable,
+) -> Unit {
+  self.shapes[e.id] = curve
+}
+
+///|
+fn ShapeCache::get(
+  self : ShapeCache,
+  e : @model.Element,
+) -> @moon_rough.Drawable? {
+  self.shapes.get(e.id)
 }
 
 ///|
@@ -32,16 +46,24 @@ fn linear_points(e : @model.Element) -> Array[(Double, Double)] {
 ///|
 /// `generateLinearElementShape`: the curve drawn for a line or arrow, which is
 /// also the first drawable of its shape.
-pub fn linear_curve(
-  e : @model.Element,
-  points : Array[(Double, Double)],
-) -> @moon_rough.Drawable {
+///
+/// A closed line with a pattern fill is drawn as a polygon, and rough.js's pattern
+/// fills rotate the polygon's points in place and back. That leaves rounding noise
+/// in upstream's `element.points`, which every later calculation then reads, so
+/// the element's points are overwritten the same way.
+pub fn generate_curve(e : @model.Element) -> @moon_rough.Drawable {
+  let points = linear_points(e)
   let gen = @moon_rough.generator()
   let options = rough_options(e)
   if e.roundness is Some(_) {
     gen.curve(points, options~)
   } else if options.fill is Some(_) {
-    gen.polygon(points, options~)
+    let work = points.map(fn(p) { @geometry.Point::new(p.0, p.1) })
+    let drawable = gen.polygon_points(work, options~)
+    for i, p in work {
+      points[i] = (p.x, p.y)
+    }
+    drawable
   } else {
     gen.linear_path(points, options~)
   }
@@ -175,10 +197,9 @@ fn linear_absolute_coords(
   e : @model.Element,
 ) -> (Double, Double, Double, Double, Double, Double) {
   let points = linear_points(e)
-  let (min_x, min_y, max_x, max_y) = if cache.cached.contains(e.id) {
-    curve_ops_bounds(curve_path_ops(linear_curve(e, points)), fn(p) { p })
-  } else {
-    points_bounds(points)
+  let (min_x, min_y, max_x, max_y) = match cache.get(e) {
+    Some(curve) => curve_ops_bounds(curve_path_ops(curve), fn(p) { p })
+    None => points_bounds(points)
   }
   let x1 = min_x + e.x
   let y1 = min_y + e.y
@@ -196,7 +217,13 @@ fn linear_rotated_bounds(
   cy : Double,
   map : Map[String, @model.Element],
 ) -> (Double, Double, Double, Double) {
-  let ops = curve_path_ops(linear_curve(e, linear_points(e)))
+  // Upstream uses the cached shape if there is one, and otherwise draws a fresh
+  // one (without caching it).
+  let curve = match cache.get(e) {
+    Some(curve) => curve
+    None => generate_curve(e)
+  }
+  let ops = curve_path_ops(curve)
   let bounds = curve_ops_bounds(ops, fn(p) {
     rotate(e.x + p.0, e.y + p.1, cx, cy, e.angle)
   })
@@ -239,11 +266,19 @@ fn control_points(
   e : @model.Element,
   end_point : (Double, Double),
 ) -> Array[(Double, Double)]? {
-  cache.mark(e)
+  // `generateElementShape`: the cached shape, or a new one that is then cached.
+  let curve = match cache.get(e) {
+    Some(curve) => curve
+    None => {
+      let curve = generate_curve(e)
+      cache.store(e, curve)
+      curve
+    }
+  }
   let mut current = (0.0, 0.0)
   let mut min_distance = @double.infinity
   let mut result = None
-  for op in curve_path_ops(linear_curve(e, linear_points(e))) {
+  for op in curve_path_ops(curve) {
     match op {
       Move(x, y) => current = (x, y)
       BCurveTo(x1, y1, x2, y2, x3, y3) => {

@@ -14,10 +14,11 @@ pub fn run(Array[String], (String) -> String raise CliError, (String, String) ->
 pub fn usage() -> String
 
 // Errors
+#derive(@debug.Debug)
 pub(all) suberror CliError {
   Usage(String)
   Io(String)
-} derive(@debug.Debug)
+}
 pub impl Show for CliError
 
 // Types and methods

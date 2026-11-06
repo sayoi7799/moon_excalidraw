@@ -25,13 +25,13 @@ pub fn element_bounds(ShapeCache, @model.Element, Map[String, @model.Element]) -
 
 pub fn freedraw_path(@model.Element) -> String
 
-pub fn generate(@model.Element, String) -> Array[@core.Drawable] raise
+pub fn generate(ShapeCache, @model.Element, String) -> Array[@core.Drawable] raise
+
+pub fn generate_curve(@model.Element) -> @core.Drawable
 
 pub fn is_path_a_loop(Array[(Double, Double)]) -> Bool
 
 pub fn is_transparent(String) -> Bool
-
-pub fn linear_curve(@model.Element, Array[(Double, Double)]) -> @core.Drawable
 
 pub fn rough_options(@model.Element, continuous_path? : Bool) -> @core.Options
 
@@ -43,8 +43,8 @@ pub fn trim_path_decimals(String) -> String
 pub struct ShapeCache {
   // private fields
 }
-pub fn ShapeCache::mark(Self, @model.Element) -> Unit
 pub fn ShapeCache::new() -> Self
+pub fn ShapeCache::store(Self, @model.Element, @core.Drawable) -> Unit
 
 // Type aliases
 

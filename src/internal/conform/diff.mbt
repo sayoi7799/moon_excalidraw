@@ -1,6 +1,7 @@
 // Classifies how our SVG differs from the official one, for the test report.
 
 ///|
+#derive(Eq, Debug)
 pub(all) enum DiffKind {
   Identical
   /// Different elements or attribute names.
@@ -9,7 +10,7 @@ pub(all) enum DiffKind {
   Attribute
   /// Everything but numbers is the same; the largest difference between them.
   Numeric(Double)
-} derive(Eq, Debug)
+}
 
 ///|
 fn is_number_char(c : Char) -> Bool {

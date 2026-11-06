@@ -1,7 +1,7 @@
 // Runs the official @excalidraw/excalidraw prod bundle under Node + jsdom.
 // The bundle needs esbuild (its ESM imports don't resolve in plain Node) and a
 // few DOM stubs. Everything is pinned by package-lock.json.
-import { execFileSync } from "node:child_process";
+import { buildSync } from "esbuild";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -31,23 +31,18 @@ export function checkVersions() {
 export function buildBundle() {
   if (existsSync(bundlePath)) return bundlePath;
   mkdirSync(dirname(bundlePath), { recursive: true });
-  const esbuild = require.resolve("esbuild/bin/esbuild");
-  execFileSync(
-    process.execPath,
-    [
-      esbuild,
-      join(here, "node_modules/@excalidraw/excalidraw/dist/prod/index.js"),
-      "--bundle",
-      "--platform=browser",
-      "--format=esm",
-      `--outfile=${bundlePath}`,
-      "--loader:.woff2=dataurl",
-      "--loader:.css=empty",
-      "--log-level=error",
-      '--define:process.env.NODE_ENV="production"',
-    ],
-    { stdio: "inherit" },
-  );
+  // The JS API, not `node esbuild/bin/esbuild`: on Linux and macOS that file is
+  // the native binary, which node cannot run.
+  buildSync({
+    entryPoints: [join(here, "node_modules/@excalidraw/excalidraw/dist/prod/index.js")],
+    bundle: true,
+    platform: "browser",
+    format: "esm",
+    outfile: bundlePath,
+    loader: { ".woff2": "dataurl", ".css": "empty" },
+    logLevel: "error",
+    define: { "process.env.NODE_ENV": '"production"' },
+  });
   return bundlePath;
 }
 
