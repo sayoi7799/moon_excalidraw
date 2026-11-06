@@ -56,6 +56,14 @@ for w in result.warnings {
 
 对比页：`moon run --target js src/cmd/gallery -- gallery/index.html`，每个场景并排放本库和官方的输出（仓库里的 [gallery/index.html](gallery/index.html) 已经生成好，290 个场景）。图片里的文字用浏览器的回退字体，因为 `<img>` 里的 SVG 不能加载外部字体。
 
+### 把一个文件夹的图变成网页
+
+```bash
+moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o examples/site/dist --title "我的图"
+```
+
+读取文件夹里所有 `.excalidraw` 文件，生成 `index.html`、每张图的 SVG 和源文件副本。某张图渲染失败时其余照常生成，命令以非零码退出。怎么接到 GitHub Pages 或 CI，让图在每次提交时自动更新：见 [examples/site](examples/site/README.md)（里面有可直接复制的工作流）。
+
 ## 支持范围
 
 | 内容 | 状态 |

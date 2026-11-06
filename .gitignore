@@ -7,3 +7,5 @@ vendor/
 .superpowers/
 scripts/.cache/
 moon.work
+examples/site/dist/
+examples/site/dist*/

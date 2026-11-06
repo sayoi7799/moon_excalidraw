@@ -1,0 +1,53 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sayoi7799/moon_excalidraw/site"
+
+import {
+  "moonbitlang/core/debug",
+  "sayoi7799/moon_excalidraw/export",
+}
+
+// Values
+pub fn build_site(Array[Diagram], title? : String, fonts? : @export.FontMode) -> SiteResult
+
+pub fn parse_args(Array[String]) -> SiteOptions raise UsageError
+
+pub fn usage() -> String
+
+// Errors
+pub suberror UsageError {
+  Usage(String)
+} derive(@debug.Debug)
+pub impl Show for UsageError
+
+// Types and methods
+pub(all) struct Diagram {
+  name : String
+  source : String
+}
+
+pub(all) struct Failure {
+  name : String
+  message : String
+}
+
+pub(all) struct SiteFile {
+  path : String
+  content : String
+}
+
+pub(all) struct SiteOptions {
+  input : String
+  output : String
+  title : String
+  fonts : @export.FontMode
+  help : Bool
+}
+
+pub(all) struct SiteResult {
+  files : Array[SiteFile]
+  failures : Array[Failure]
+}
+
+// Type aliases
+
+// Traits
