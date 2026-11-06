@@ -51,16 +51,22 @@ fn round_diamond_path(e : @model.Element) -> String {
 /// The rough.js drawables of an element, in paint order. Text, images and frames
 /// have none. `canvas_background` fills "outline" arrowheads.
 pub fn generate(
+  cache : ShapeCache,
   e : @model.Element,
   canvas_background : String,
 ) -> Array[@moon_rough.Drawable] raise {
   let gen = @moon_rough.generator()
   match e.kind {
     Freedraw({ points, .. }) => freedraw_fill(e, points)
-    Line({ points, .. }) => [linear_curve(e, points)]
+    Line(_) => {
+      let curve = generate_curve(e)
+      cache.store(e, curve)
+      [curve]
+    }
     Arrow({ points, start_arrowhead, end_arrowhead, .. }) => {
       let options = Ref(rough_options(e))
-      let curve = linear_curve(e, points)
+      let curve = generate_curve(e)
+      cache.store(e, curve)
       let shapes = [curve]
       if start_arrowhead is Some(head) {
         shapes.append(

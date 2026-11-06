@@ -209,7 +209,7 @@ fn render_element(
   let opacity = frame_opacity * e.opacity / 10000.0
   match e.kind {
     Rectangle | Diamond | Ellipse => {
-      let shapes = @shape.generate(e, ctx.canvas_background)
+      let shapes = @shape.generate(ctx.cache, e, ctx.canvas_background)
       let node = draw_rough(shapes[0])
       set_opacity(node, opacity)
       node.set("stroke-linecap", "round")
@@ -284,8 +284,7 @@ fn render_element(
         group.set("mask", "url(#mask-\{e.id})")
       }
       group.set("stroke-linecap", "round")
-      let shapes = @shape.generate(e, ctx.canvas_background)
-      ctx.cache.mark(e)
+      let shapes = @shape.generate(ctx.cache, e, ctx.canvas_background)
       let filled_loop = e.kind is Line(_) &&
         @shape.is_path_a_loop(l.points) &&
         e.background_color != "transparent"
@@ -307,7 +306,7 @@ fn render_element(
       }
     }
     Freedraw(_) => {
-      let shapes = @shape.generate(e, ctx.canvas_background)
+      let shapes = @shape.generate(ctx.cache, e, ctx.canvas_background)
       let node = if shapes.length() > 0 {
         draw_rough(shapes[0])
       } else {
