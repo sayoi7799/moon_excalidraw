@@ -120,6 +120,7 @@ pub(all) struct Scene {
 }
 
 ///|
+#derive(Debug)
 pub suberror ParseError {
   /// The text isn't valid JSON.
   InvalidJson(String)
@@ -127,14 +128,16 @@ pub suberror ParseError {
   NotAScene(String)
   /// An element with this id has an unusable field, described by the message.
   InvalidElement(String, String)
-} derive(Debug)
+}
 
 ///|
 pub impl Show for ParseError with fn output(self, logger) {
   match self {
-    InvalidJson(message) => logger.write_string("invalid JSON: \{message}")
-    NotAScene(message) => logger.write_string("not a scene: \{message}")
+    InvalidJson(message) =>
+      logger.write_string("the file is not valid JSON (\{message})")
+    NotAScene(message) =>
+      logger.write_string("the file is not an Excalidraw scene: \{message}")
     InvalidElement(id, message) =>
-      logger.write_string("element \"\{id}\": \{message}")
+      logger.write_string("element \"\{id}\" is damaged: \{message}")
   }
 }

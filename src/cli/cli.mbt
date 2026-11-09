@@ -3,12 +3,13 @@
 // backend.
 
 ///|
+#derive(Debug)
 pub(all) suberror CliError {
   /// The command line is wrong.
   Usage(String)
   /// A file couldn't be read or written.
   Io(String)
-} derive(Debug)
+}
 
 ///|
 pub impl Show for CliError with fn output(self, logger) {
@@ -63,7 +64,7 @@ pub fn parse_args(args : Array[String]) -> CliOptions raise CliError {
       output = Some(args[i + 1])
       i += 1
     } else if arg.has_prefix("--output=") {
-      output = Some(arg.view(start_offset="--output=".length()).to_owned())
+      output = Some(arg.clamped_view(start="--output=".length()).to_owned())
     } else if arg.has_prefix("-") {
       raise Usage("unknown option \{arg}")
     } else if input is Some(_) {

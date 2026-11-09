@@ -56,6 +56,14 @@ for w in result.warnings {
 
 对比页：`moon run --target js src/cmd/gallery -- gallery/index.html`，每个场景并排放本库和官方的输出（仓库里的 [gallery/index.html](gallery/index.html) 已经生成好，290 个场景）。图片里的文字用浏览器的回退字体，因为 `<img>` 里的 SVG 不能加载外部字体。
 
+### 把一个文件夹的图变成网页
+
+```bash
+moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o examples/site/dist --title "我的图"
+```
+
+读取文件夹里所有 `.excalidraw` 文件，生成 `index.html`、每张图的 SVG 和源文件副本。某张图渲染失败时其余照常生成，命令以非零码退出。怎么接到 GitHub Pages 或 CI，让图在每次提交时自动更新：见 [examples/site](examples/site/README.md)（里面有可直接复制的工作流）。
+
 ## 支持范围
 
 | 内容 | 状态 |
@@ -98,13 +106,13 @@ for w in result.warnings {
 | Suite | What it covers | Scenes | Byte-identical | Different |
 |---|---|---:|---:|---:|
 | single basic | Rectangles, diamonds, ellipses × fill, stroke, roughness, roundness | 252 | 252 | 0 |
-| single linear | Lines, arrows, closed fills, all arrowhead styles | 341 | 341 | 0 |
+| single linear | Lines, arrows, closed fills, all arrowhead styles | 362 | 362 | 0 |
 | single text | Text: every font id, alignment, direction, bound to shapes and arrows | 200 | 200 | 0 |
 | single misc | Freedraw, images, frames, links | 78 | 78 | 0 |
 | fonts | Font rules (`FontMode::Url`) for each family and character set | 185 | 185 | 0 |
 | combined | Diagrams (editor API, hand-made, random, and 3 drawn in the real editor) | 55 | 55 | 0 |
 | edge cases | Empty and degenerate scenes, extreme numbers, old formats, official errors | 65 | 65 | 0 |
-| **Total** | | **1176** | **1176** | **0** |
+| **Total** | | **1197** | **1197** | **0** |
 
 | Lower-level check | Cases | Different |
 |---|---:|---:|

@@ -1,0 +1,73 @@
+# Copy this file to .github/workflows/diagrams.yml in the repository that holds
+# your .excalidraw files. Every push to main that touches the diagrams rebuilds
+# the site and publishes it to GitHub Pages.
+#
+# One-time setup: Settings > Pages > Build and deployment > Source: "GitHub Actions".
+#
+# Change DIAGRAMS to the folder that holds your files.
+name: Diagrams site
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "diagrams/**"
+      - ".github/workflows/diagrams.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  DIAGRAMS: diagrams
+  # The version of moon_excalidraw that draws the pictures. Pin a tag so that a
+  # new release can't change your pictures without a commit of yours.
+  MOON_EXCALIDRAW_REF: v0.1.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get moon_excalidraw
+        uses: actions/checkout@v4
+        with:
+          repository: sayoi7799/moon_excalidraw
+          ref: ${{ env.MOON_EXCALIDRAW_REF }}
+          path: .moon_excalidraw
+
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Build the site
+        working-directory: .moon_excalidraw
+        run: |
+          moon update
+          moon run --target native src/cmd/excalidraw2site -- \
+            "$GITHUB_WORKSPACE/$DIAGRAMS" \
+            -o "$GITHUB_WORKSPACE/_site" \
+            --title "${{ github.event.repository.name }}"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

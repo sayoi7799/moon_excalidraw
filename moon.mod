@@ -17,7 +17,7 @@ source = "src"
 preferred_target = "js"
 
 import {
-  "sayoi7799/moon_rough@0.2.1",
+  "sayoi7799/moon_rough@0.3.0",
   "moonbitlang/x@0.5.7",
 }
 
