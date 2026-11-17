@@ -21,6 +21,24 @@ $ excalidraw2svg diagram.excalidraw -o diagram.svg
 
 rough 以外的部分都是新增的：元素模型、各类元素的图形生成规则、箭头和箭头样式、文字、手绘笔迹、分组和 frame、导出布局、SVG 序列化。
 
+## 安装
+
+在你的 MoonBit 项目里：
+
+```bash
+moon add sayoi7799/moon_excalidraw
+```
+
+然后在用到它的包的 `moon.pkg` 里导入：
+
+```text
+import {
+  "sayoi7799/moon_excalidraw",
+}
+```
+
+代码里用 `@moon_excalidraw` 访问。js、wasm-gc、native 三个后端都能用，开发和测试用的是 moon 0.1.20261104。命令行工具不随库安装，要克隆本仓库后用下面的 `moon run` 运行。
+
 ## 使用
 
 命令行：
@@ -39,18 +57,36 @@ excalidraw2svg <input.excalidraw> [options]
 
 跳过的元素和其他“和官方结果不会一致”的情况会作为 warning 打印到 stderr；出错时退出码非零。在 Windows 的 native 版本上，stdout 是文本模式，换行会变成 `\r\n`；要得到逐字节一致的文件请用 `-o`（js 和 native 写出的文件完全相同）。
 
-作为库使用：
+作为库使用（安装见上）。下面是一个完整的 `main`，可以直接编译运行：
 
 ```moonbit
-let scene = @moon_excalidraw.parse_scene(text) // 非法 JSON、坏字段会 raise ParseError
-let result = @moon_excalidraw.export_to_svg(
-  scene,
-  fonts=None,                  // Url（默认）或 None
-  on_unsupported=SkipWithWarning, // 或 Error
-)
-println(result.svg)
-for w in result.warnings {
-  println(w.message)
+///|
+fn main {
+  let text =
+    #|{"type":"excalidraw","version":2,"elements":[
+    #|  {"type":"rectangle","id":"a","x":0,"y":0,"width":120,"height":60,"seed":1}
+    #|]}
+  let scene = @moon_excalidraw.parse_scene(text) catch {
+    // 非法 JSON、坏字段会 raise ParseError
+    err => {
+      println("bad file: \{err}")
+      return
+    }
+  }
+  let result = @moon_excalidraw.export_to_svg(
+    scene,
+    fonts=None, // Url（默认）或 None
+    on_unsupported=SkipWithWarning, // 或 Error
+  ) catch {
+    err => {
+      println("cannot draw: \{err}")
+      return
+    }
+  }
+  println(result.svg)
+  for w in result.warnings {
+    println(w.message)
+  }
 }
 ```
 
