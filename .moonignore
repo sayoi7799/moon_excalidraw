@@ -19,3 +19,5 @@ node_modules/
 .moon-lock
 /vendor/
 .superpowers/
+/demo/
+/demo-dist/
