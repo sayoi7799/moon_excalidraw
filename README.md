@@ -21,6 +21,24 @@ $ excalidraw2svg diagram.excalidraw -o diagram.svg
 
 rough 以外的部分都是新增的：元素模型、各类元素的图形生成规则、箭头和箭头样式、文字、手绘笔迹、分组和 frame、导出布局、SVG 序列化。
 
+## 安装
+
+在你的 MoonBit 项目里：
+
+```bash
+moon add sayoi7799/moon_excalidraw
+```
+
+然后在用到它的包的 `moon.pkg` 里导入：
+
+```text
+import {
+  "sayoi7799/moon_excalidraw",
+}
+```
+
+代码里用 `@moon_excalidraw` 访问。js、wasm-gc、native 三个后端都能用，开发和测试用的是 moon 0.1.20261104。命令行工具不随库安装，要克隆本仓库后用下面的 `moon run` 运行。
+
 ## 使用
 
 命令行：
@@ -39,18 +57,36 @@ excalidraw2svg <input.excalidraw> [options]
 
 跳过的元素和其他“和官方结果不会一致”的情况会作为 warning 打印到 stderr；出错时退出码非零。在 Windows 的 native 版本上，stdout 是文本模式，换行会变成 `\r\n`；要得到逐字节一致的文件请用 `-o`（js 和 native 写出的文件完全相同）。
 
-作为库使用：
+作为库使用（安装见上）。下面是一个完整的 `main`，可以直接编译运行：
 
 ```moonbit
-let scene = @moon_excalidraw.parse_scene(text) // 非法 JSON、坏字段会 raise ParseError
-let result = @moon_excalidraw.export_to_svg(
-  scene,
-  fonts=None,                  // Url（默认）或 None
-  on_unsupported=SkipWithWarning, // 或 Error
-)
-println(result.svg)
-for w in result.warnings {
-  println(w.message)
+///|
+fn main {
+  let text =
+    #|{"type":"excalidraw","version":2,"elements":[
+    #|  {"type":"rectangle","id":"a","x":0,"y":0,"width":120,"height":60,"seed":1}
+    #|]}
+  let scene = @moon_excalidraw.parse_scene(text) catch {
+    // 非法 JSON、坏字段会 raise ParseError
+    err => {
+      println("bad file: \{err}")
+      return
+    }
+  }
+  let result = @moon_excalidraw.export_to_svg(
+    scene,
+    fonts=None, // Url（默认）或 None
+    on_unsupported=SkipWithWarning, // 或 Error
+  ) catch {
+    err => {
+      println("cannot draw: \{err}")
+      return
+    }
+  }
+  println(result.svg)
+  for w in result.warnings {
+    println(w.message)
+  }
 }
 ```
 
@@ -173,9 +209,11 @@ fixtures 的来源：`scripts/package-lock.json` 锁定 `@excalidraw/excalidraw`
 
 CI 见 [.github/workflows/check.yml](.github/workflows/check.yml)：在 Linux、macOS、Windows 上跑 `moon check --deny-warn`、`moon build`、`moon test`（都带 `--target all`）、`moon fmt --check`，再确认 `moon info` 之后 `git diff` 为空；另有一个 job 安装 Node，重新生成 fixtures 并要求和仓库里的完全一致，同时检查 README 的对照表。Node 版本固定在 [scripts/.nvmrc](scripts/.nvmrc)（24.20.0），因为 `containsCJK` 的字符集随 Node 的 Unicode 版本而定。
 
-### 依赖 moon_rough 的未发布版本
+### 依赖 moon_rough 0.3.0
 
-官方用 rough.js 4.6.4，moon_rough 对应 4.6.6，两者在三处不同：`hachureGap` 是否取整、3 点曲线的填充算法、2 点曲线的画法。moon_rough 的 `roughjs_464` 选项还原了 4.6.4 的行为（8148 个数值逐位一致）。在这个选项发布之前，本仓库通过被 git 忽略的 `moon.work` 使用本地的 moon_rough 副本；发布 moon_rough 的新版本之后，把 `moon.mod` 里的依赖版本改成新版本即可。
+官方用 rough.js 4.6.4，moon_rough 默认对应 4.6.6，两者在三处不同：`hachureGap` 是否取整、3 点曲线的填充算法、2 点曲线的画法。moon_rough 的 `roughjs_464` 选项还原了 4.6.4 的行为（8148 个数值逐位一致）。这个选项和本库用到的 `Generator::polygon_points` 都在已发布的 moon_rough 0.3.0 里，`moon.mod` 依赖的就是这个版本，克隆仓库后直接 `moon test` 即可，不需要本地副本。
+
+想同时改 moon_rough 和本库时，可以在仓库根目录用 `moon work init . <moon_rough 的本地路径>` 生成 `moon.work`（已被 `.gitignore` 忽略，不会提交），用完删掉。
 
 ## 参考来源和许可证
 

@@ -1,0 +1,21 @@
+# Not part of the published package: the fixture generator, the gallery, the
+# scene fixtures, the examples, the design notes and CI. The leading slash keeps
+# each pattern to the repository root, so src/internal/fixtures and
+# src/cmd/gallery stay in.
+/scripts/
+/gallery/
+/fixtures/
+/examples/
+/docs/
+/.github/
+/moon.work
+/moon.work.bak
+
+# Build output and local state, as in .gitignore
+target/
+_build/
+.mooncakes/
+node_modules/
+.moon-lock
+/vendor/
+.superpowers/
