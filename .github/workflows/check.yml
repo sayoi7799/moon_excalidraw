@@ -114,3 +114,10 @@ jobs:
 
       - name: README table is up to date
         run: node scripts/update_readme_stats.mjs --check
+
+      # The demo page runs this build in a browser; here the same module is held
+      # against the official export for the examples and the real scenes.
+      - name: demo module matches the official export
+        run: |
+          moon build --target js --release
+          node scripts/demo_check.mjs
