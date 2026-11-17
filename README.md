@@ -173,9 +173,11 @@ fixtures 的来源：`scripts/package-lock.json` 锁定 `@excalidraw/excalidraw`
 
 CI 见 [.github/workflows/check.yml](.github/workflows/check.yml)：在 Linux、macOS、Windows 上跑 `moon check --deny-warn`、`moon build`、`moon test`（都带 `--target all`）、`moon fmt --check`，再确认 `moon info` 之后 `git diff` 为空；另有一个 job 安装 Node，重新生成 fixtures 并要求和仓库里的完全一致，同时检查 README 的对照表。Node 版本固定在 [scripts/.nvmrc](scripts/.nvmrc)（24.20.0），因为 `containsCJK` 的字符集随 Node 的 Unicode 版本而定。
 
-### 依赖 moon_rough 的未发布版本
+### 依赖 moon_rough 0.3.0
 
-官方用 rough.js 4.6.4，moon_rough 对应 4.6.6，两者在三处不同：`hachureGap` 是否取整、3 点曲线的填充算法、2 点曲线的画法。moon_rough 的 `roughjs_464` 选项还原了 4.6.4 的行为（8148 个数值逐位一致）。在这个选项发布之前，本仓库通过被 git 忽略的 `moon.work` 使用本地的 moon_rough 副本；发布 moon_rough 的新版本之后，把 `moon.mod` 里的依赖版本改成新版本即可。
+官方用 rough.js 4.6.4，moon_rough 默认对应 4.6.6，两者在三处不同：`hachureGap` 是否取整、3 点曲线的填充算法、2 点曲线的画法。moon_rough 的 `roughjs_464` 选项还原了 4.6.4 的行为（8148 个数值逐位一致）。这个选项和本库用到的 `Generator::polygon_points` 都在已发布的 moon_rough 0.3.0 里，`moon.mod` 依赖的就是这个版本，克隆仓库后直接 `moon test` 即可，不需要本地副本。
+
+想同时改 moon_rough 和本库时，可以在仓库根目录用 `moon work init . <moon_rough 的本地路径>` 生成 `moon.work`（已被 `.gitignore` 忽略，不会提交），用完删掉。
 
 ## 参考来源和许可证
 
