@@ -1,0 +1,14 @@
+import {
+  "sayoi7799/moon_excalidraw/model",
+  "sayoi7799/moon_excalidraw/export",
+}
+
+import {
+  "moonbitlang/core/json",
+} for "test"
+
+pkgtype(kind: "foreign_library")
+
+options(
+  link: { "js": { "exports": [ "render" ], "format": "esm" } },
+)
