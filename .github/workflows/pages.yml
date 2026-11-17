@@ -1,0 +1,75 @@
+# Publishes the demo page to GitHub Pages on every push to main.
+#
+# One-time setup: Settings > Pages > Build and deployment > Source: "GitHub Actions".
+# The page is then at https://<user>.github.io/moon_excalidraw/.
+name: Demo page
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: install-moon
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: post install
+        run: |
+          moon version --all
+          moon update
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: scripts/.nvmrc
+          cache: npm
+          cache-dependency-path: scripts/package-lock.json
+
+      - name: install the pinned official packages
+        working-directory: scripts
+        run: npm ci
+
+      # The page's left side is this build.
+      - name: compile the library to JavaScript
+        run: moon build --target js --release
+
+      # Do not publish a page whose two sides disagree.
+      - name: module matches the official export
+        run: node scripts/demo_check.mjs
+
+      - name: build the page
+        run: node scripts/build_demo.mjs "$RUNNER_TEMP/demo"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/demo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
