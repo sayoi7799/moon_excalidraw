@@ -38,3 +38,20 @@ test "the fixtures are not empty" {
   }
   assert_true(longest > 10000)
 }
+
+///|
+/// The count the README reports: each input must compress to what lz-string
+/// gives and decompress back to the input.
+test "LZ-String against lz-string, counted" {
+  let mut bad = 0
+  for c in lz_cases {
+    let (_, input, packed) = c
+    if @obsidian.compress_to_base64(input) != packed {
+      bad += 1
+    } else if @obsidian.decompress_from_base64(packed) != Some(input) {
+      bad += 1
+    }
+  }
+  println("[lzstring] total=\{lz_cases.length()} mismatched=\{bad}")
+  assert_eq(bad, 0)
+}

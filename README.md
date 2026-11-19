@@ -140,6 +140,9 @@ moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o exampl
 | 容错：`isDeleted`、缺字段的旧文件（`strokeSharpness`、`font`、`boundElementIds`、`draw` 等）、未知字段 | 支持 |
 | Obsidian Excalidraw 插件的 `.excalidraw.md`（压缩的 `compressed-json` 和不压缩的 `json`，LF 或 CRLF） | 支持，见下面「Obsidian 文件」 |
 | embeddable、iframe、肘形箭头（elbowed）、未知元素类型 | 报错或跳过并警告，由调用方选择，**不会静默画错** |
+| 命令行：`excalidraw2svg`（一个文件到一个 SVG，`--strict`、`--no-fonts`、`-o`）、`excalidraw2site`（一个文件夹到一个网页，可接 GitHub Pages 或 CI） | 支持，js 和 native 后端 |
+| 库：`parse_scene`、`export_to_svg`，`wasm-gc` 后端也能用 | 支持 |
+| 对比：并排放本库和官方输出的静态页 `gallery/index.html`；[在线演示页](https://sayoi7799.github.io/moon_excalidraw/)（浏览器里实时对照官方 `exportToSvg`） | 支持 |
 | 编辑和交互、PNG、协作、`.excalidrawlib`、深色模式、`exportEmbedScene`、导出单个 frame、字体子集化 | 不做 |
 
 ## 和官方结果的差异
@@ -185,12 +188,15 @@ moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o exampl
 | perfect-freehand outlines, every number compared by bit pattern | 322 | 0 |
 | `restoreElements` normalisation of old and partial elements | 50 | 0 |
 | JSON numbers read like V8 does | 10000 | 0 |
+| LZ-String compress and decompress against lz-string 1.5.0 (the Obsidian file format) | 24 | 0 |
 | `Math.hypot` | 5256 | 0 |
 | `Math.atan2` | 5256 | 0 |
 | x³ correctly rounded (V8's `Math.pow(x, 3)` varies by platform) | 8000 | 0 |
 <!-- stats:end -->
 
 “Different”按差异类型分为结构不同、属性不同、数值不同，测试失败时会列出前几个失败场景的名字。
+
+预期值是在 Node 里用 jsdom 跑官方包得到的。为了确认 jsdom 的输出和真实浏览器一致，`scripts/browser_check.mjs` 在 Chromium 里对 21 个覆盖所有元素类型的场景重新导出，和 jsdom 的结果逐字节相同。[在线演示页](https://sayoi7799.github.io/moon_excalidraw/)更进一步：官方包直接在访问者的浏览器里运行，和本库当场对照；CI 里的 `scripts/demo_check.mjs` 对示例图和真实编辑器画的图做同样的对照，发布页面之前必须先通过。
 
 场景的来源：
 
@@ -212,6 +218,9 @@ moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o exampl
 | `svg` | 一棵很小的 SVG 树，按 `outerHTML` 的规则序列化（属性顺序、转义） |
 | `model` | 读 JSON，丢掉已删除的元素，套用官方 `restore` 的规则补齐旧文件缺的字段；遇到 Obsidian 的 `.excalidraw.md` 就先交给 `obsidian` 取出场景 |
 | `obsidian` | 找到 `.excalidraw.md` 里的 `## Drawing`，解出 LZ-String 压缩的 JSON，并读出 `## Text Elements` 和 `## Embedded Files`；`lzstring.mbt` 是 `lz-string` 的 `compressToBase64` 和 `decompressFromBase64` |
+| `site` | 把一批 `.excalidraw` / `.excalidraw.md` 渲染成一个网页：每张图一个 SVG，用 `<object>` 嵌入（这样字体能加载、id 不冲突），某个文件坏了只在它的卡片上写明原因，其余照常 |
+| `cli`、`cmd/*` | 命令行的参数解析和文件读写，逻辑都在库里，用假的文件系统测试，所以三个后端都能测 |
+| `web` | 只导出一个 `render` 函数给 JavaScript，演示页的左边只调用它 |
 | `internal/jsnum` | `Math.hypot`、`atan2`、`parseFloat` 等 V8 行为，逐位对照 |
 
 一个容易忽略的细节：官方导出里，一个线性元素的“绝对坐标”取决于它的 rough 形状**有没有被生成过**（没生成过就用点估算，生成过就用真实曲线），所以导出结果依赖元素的绘制顺序。`shape.ShapeCache` 专门记录这个状态。
