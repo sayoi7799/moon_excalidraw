@@ -185,6 +185,7 @@ moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o exampl
 | perfect-freehand outlines, every number compared by bit pattern | 322 | 0 |
 | `restoreElements` normalisation of old and partial elements | 50 | 0 |
 | JSON numbers read like V8 does | 10000 | 0 |
+| LZ-String compress and decompress against lz-string 1.5.0 (the Obsidian file format) | 24 | 0 |
 | `Math.hypot` | 5256 | 0 |
 | `Math.atan2` | 5256 | 0 |
 | x³ correctly rounded (V8's `Math.pow(x, 3)` varies by platform) | 8000 | 0 |

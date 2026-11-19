@@ -17,7 +17,7 @@ const END = "<!-- stats:end -->";
 const run = (pkg) =>
   execSync(`moon test --target js -p sayoi7799/moon_excalidraw/${pkg}`, { cwd: root, encoding: "utf8", maxBuffer: 1 << 28, stdio: ["ignore", "pipe", "pipe"] });
 
-const out = ["export", "freehand", "model", "svg", "internal/jsnum", "internal/conform"].map(run).join("\n");
+const out = ["export", "freehand", "model", "svg", "internal/jsnum", "internal/conform", "obsidian"].map(run).join("\n");
 
 const rows = [];
 for (const m of out.matchAll(/\[conformance\] suite=(.+?) total=(\d+) identical=(\d+) structural=(\d+) attribute=(\d+) numeric=(\d+) max_delta=(\S+)/g)) {
@@ -58,6 +58,7 @@ const jsnum = ["hypot", "atan2", "cube", "parse_float"].map((n) => {
   return m ? { n, total: +m[1], bad: +m[2] } : null;
 }).filter(Boolean);
 const [, jdTotal, jdBad] = pick(/\[json doubles\] total=(\d+) mismatched=(\d+)/);
+const [, lzTotal, lzBad] = pick(/\[lzstring\] total=(\d+) mismatched=(\d+)/);
 
 lines.push(
   "",
@@ -66,6 +67,7 @@ lines.push(
   `| perfect-freehand outlines, every number compared by bit pattern | ${fhTotal} | ${fhBad} |`,
   `| \`restoreElements\` normalisation of old and partial elements | ${rsTotal} | ${rsBad} |`,
   `| JSON numbers read like V8 does | ${jdTotal} | ${jdBad} |`,
+  `| LZ-String compress and decompress against lz-string 1.5.0 (the Obsidian file format) | ${lzTotal} | ${lzBad} |`,
   ...jsnum.map((j) => {
     const name = j.n === "cube" ? "x³ correctly rounded (V8's `Math.pow(x, 3)` varies by platform)" : j.n === "parse_float" ? "`parseFloat`" : `\`Math.${j.n}\``;
     return `| ${name} | ${j.total} | ${j.bad} |`;
