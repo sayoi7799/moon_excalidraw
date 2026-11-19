@@ -152,7 +152,8 @@ moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o exampl
 | fonts | Font rules (`FontMode::Url`) for each family and character set | 185 | 185 | 0 |
 | combined | Diagrams (editor API, hand-made, random, and 3 drawn in the real editor) | 55 | 55 | 0 |
 | edge cases | Empty and degenerate scenes, extreme numbers, old formats, official errors | 65 | 65 | 0 |
-| **Total** | | **1197** | **1197** | **0** |
+| obsidian | Obsidian `.excalidraw.md` files (compressed, plain, CRLF, texts, vault images) against the official export of the scene inside | 19 | 19 | 0 |
+| **Total** | | **1216** | **1216** | **0** |
 
 | Lower-level check | Cases | Different |
 |---|---:|---:|

@@ -117,6 +117,9 @@ pub(all) struct Scene {
   export_background : Bool
   view_background_color : String
   files : Map[String, FileData]
+  /// Things about the file itself that the caller should hear of, such as text
+  /// that was read from somewhere other than the drawing.
+  notes : Array[String]
 }
 
 ///|
@@ -128,6 +131,8 @@ pub suberror ParseError {
   NotAScene(String)
   /// An element with this id has an unusable field, described by the message.
   InvalidElement(String, String)
+  /// An Obsidian `.excalidraw.md` file whose drawing can't be read.
+  InvalidMarkdown(String)
 }
 
 ///|
@@ -139,5 +144,7 @@ pub impl Show for ParseError with fn output(self, logger) {
       logger.write_string("the file is not an Excalidraw scene: \{message}")
     InvalidElement(id, message) =>
       logger.write_string("element \"\{id}\" is damaged: \{message}")
+    InvalidMarkdown(message) =>
+      logger.write_string("the Obsidian file can't be read: \{message}")
   }
 }

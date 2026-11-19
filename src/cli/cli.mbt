@@ -89,6 +89,7 @@ fn describe(e : @model.ParseError) -> String {
     InvalidJson(message) => "the file is not valid JSON (\{message})"
     NotAScene(message) => "the file is not an Excalidraw scene: \{message}"
     InvalidElement(id, message) => "element \"\{id}\" is damaged: \{message}"
+    InvalidMarkdown(message) => "the Obsidian file can't be read: \{message}"
   }
 }
 

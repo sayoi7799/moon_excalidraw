@@ -6,9 +6,23 @@ pub fn compress_to_base64(String) -> String
 
 pub fn decompress_from_base64(String) -> String?
 
+pub fn extract(StringView) -> Extracted raise MarkdownError
+
+pub fn looks_like_markdown(StringView) -> Bool
+
 // Errors
+pub suberror MarkdownError {
+  Message(String)
+}
+pub impl Show for MarkdownError
 
 // Types and methods
+pub(all) struct Extracted {
+  json : String
+  texts : Map[String, String]
+  embedded : Map[String, String]
+  parsed_mode : Bool
+}
 
 // Type aliases
 

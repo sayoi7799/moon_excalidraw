@@ -18,6 +18,8 @@ pub let hypot_cases : Array[String]
 
 pub let link_cases : Array[(String, String)]
 
+pub let obsidian : Array[SceneCase]
+
 pub let parse_float_cases : Array[String]
 
 pub let restore_cases : Array[RestoreCase]

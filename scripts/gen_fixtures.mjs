@@ -86,6 +86,26 @@ const suites = {
     );
   },
 
+  async obsidian() {
+    const { obsidianCases } = await import("./cases_obsidian.mjs");
+    const cases = obsidianCases();
+    // The files rendered against the official export of the scene they hold.
+    await suite("obsidian", cases.map((c) => ({ name: c.name, scene: c.official, raw: c.md })));
+    // The drawing read back from each file: the scene's JSON, as the plugin writes it.
+    const sceneNames = [...new Set(cases.map((c) => c.sceneName))];
+    const json = (c) => JSON.stringify(c.scene, null, "\t");
+    const jsonOf = sceneNames.map((n) => json(cases.find((c) => c.sceneName === n)));
+    const files = cases.map((c) => {
+      const texts = Object.entries(c.texts).map(([id, t]) => `${id}|${t}`).join("\u0001");
+      const embedded = Object.entries(c.embedded).map(([id, p]) => `${id}|${p}`).join("\u0001");
+      return `  (${str(c.name)}, ${str(c.md)}, ${str(json(c))}, ${str(texts)}, ${str(embedded)}),`;
+    });
+    writeGen(
+      "src/obsidian/obsidian_gen_test.mbt",
+      `///|\nlet obsidian_files : Array[(String, String, String, String, String)] = [\n${files.join("\n")}\n]\n`,
+    );
+  },
+
   async freehand() {
     const { freehandCases } = await import("./cases_freehand.mjs");
     writeGen("src/internal/fixtures/freehand_gen.mbt", strArray("freehand_cases", freehandCases()));

@@ -63,3 +63,8 @@ test "single linear match official" {
 test "single basic shapes match official" {
   check_suite("single basic", @fixtures.single_basic)
 }
+
+///|
+test "obsidian files match official" {
+  check_suite("obsidian", @fixtures.obsidian)
+}

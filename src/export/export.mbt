@@ -119,6 +119,9 @@ pub fn export_to_svg(
 ) -> ExportResult raise ExportError {
   let measure = measure_text.unwrap_or(default_measure)
   let warnings = []
+  for note in scene.notes {
+    warnings.push({ element_id: None, message: note, })
+  }
   let elements = check_elements(scene.elements, on_unsupported, warnings)
   // Frame titles become text elements of their own.
   let for_render = add_frame_labels(elements, measure)
