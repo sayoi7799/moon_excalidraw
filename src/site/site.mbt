@@ -49,14 +49,26 @@ fn safe_file_name(name : String) -> String {
 }
 
 ///|
-/// The name without `.excalidraw` or `.json`.
+/// The name without `.excalidraw.md`, `.excalidraw` or `.json`.
 fn stem_of(name : String) -> String {
-  if name.has_suffix(".excalidraw") {
+  if name.has_suffix(".excalidraw.md") {
+    name.clamped_view(end=name.length() - ".excalidraw.md".length()).to_owned()
+  } else if name.has_suffix(".excalidraw") {
     name.clamped_view(end=name.length() - ".excalidraw".length()).to_owned()
   } else if name.has_suffix(".json") {
     name.clamped_view(end=name.length() - ".json".length()).to_owned()
   } else {
     name
+  }
+}
+
+///|
+/// What the link to the source file says.
+fn source_label(name : String) -> String {
+  if name.has_suffix(".excalidraw.md") {
+    ".excalidraw.md"
+  } else {
+    ".excalidraw"
   }
 }
 
@@ -165,7 +177,7 @@ fn card(b : Built) -> String {
     b.warnings.map(fn(w) { "<li>\{escape_html(w)}</li>" }).join("") +
     "</ul>"
   }
-  "<section class=\"card\"><h2>\{name}</h2><object data=\"\{svg_url}\" type=\"image/svg+xml\"\{style}><img src=\"\{svg_url}\" alt=\"\{name}\"></object><p class=\"links\"><a href=\"\{svg_url}\">SVG</a> <a href=\"\{src_url}\">.excalidraw</a></p>\{warnings}</section>"
+  "<section class=\"card\"><h2>\{name}</h2><object data=\"\{svg_url}\" type=\"image/svg+xml\"\{style}><img src=\"\{svg_url}\" alt=\"\{name}\"></object><p class=\"links\"><a href=\"\{svg_url}\">SVG</a> <a href=\"\{src_url}\">\{source_label(name)}</a></p>\{warnings}</section>"
 }
 
 ///|
@@ -192,7 +204,7 @@ fn page(
     "\{count} diagrams, \{failed} could not be rendered."
   }
   let body = if count == 0 {
-    "<p>No diagrams found. Put <code>.excalidraw</code> files in the folder and build again.</p>"
+    "<p>No diagrams found. Put <code>.excalidraw</code> or <code>.excalidraw.md</code> files in the folder and build again.</p>"
   } else {
     "<div class=\"grid\">" + cards.join("") + "</div>"
   }

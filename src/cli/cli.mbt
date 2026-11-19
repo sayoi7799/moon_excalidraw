@@ -37,7 +37,7 @@ pub(all) struct CliResult {
 
 ///|
 pub fn usage() -> String {
-  "Usage: excalidraw2svg <input.excalidraw> [options]\n\nRenders an Excalidraw file to SVG, like the official exportToSvg.\n\nOptions:\n  -o, --output <file>  Write the SVG to a file instead of printing it\n  --no-fonts           Leave the font rules out of the SVG\n  --strict             Fail on elements that can't be drawn (embeddables,\n                       iframes, elbow arrows) instead of skipping them\n  -h, --help           Show this help\n\nSkipped elements and other things that won't match the official export are\nreported on stderr as warnings."
+  "Usage: excalidraw2svg <input.excalidraw | input.excalidraw.md> [options]\n\nRenders an Excalidraw file to SVG, like the official exportToSvg. The file can\nalso be one of the Obsidian Excalidraw plugin (.excalidraw.md).\n\nOptions:\n  -o, --output <file>  Write the SVG to a file instead of printing it\n  --no-fonts           Leave the font rules out of the SVG\n  --strict             Fail on elements that can't be drawn (embeddables,\n                       iframes, elbow arrows) instead of skipping them\n  -h, --help           Show this help\n\nSkipped elements and other things that won't match the official export are\nreported on stderr as warnings."
 }
 
 ///|
@@ -89,6 +89,7 @@ fn describe(e : @model.ParseError) -> String {
     InvalidJson(message) => "the file is not valid JSON (\{message})"
     NotAScene(message) => "the file is not an Excalidraw scene: \{message}"
     InvalidElement(id, message) => "element \"\{id}\" is damaged: \{message}"
+    InvalidMarkdown(message) => "the Obsidian file can't be read: \{message}"
   }
 }
 

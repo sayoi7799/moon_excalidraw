@@ -1,4 +1,4 @@
-// `excalidraw2site`: turns a folder of .excalidraw files into a small website.
+// `excalidraw2site`: turns a folder of .excalidraw and .excalidraw.md files into a small website.
 // The work is in the site package; this reads the folder and writes the result.
 
 ///|
@@ -38,7 +38,8 @@ fn read_diagrams(dir : String) -> Array[@site.Diagram] raise @fs.IOError {
   let diagrams : Array[@site.Diagram] = []
   for name in names {
     let path = join(dir, name)
-    if name.has_suffix(".excalidraw") && @fs.is_file(path) {
+    if (name.has_suffix(".excalidraw") || name.has_suffix(".excalidraw.md")) &&
+      @fs.is_file(path) {
       diagrams.push({ name, source: @fs.read_file_to_string(path), })
     }
   }
@@ -79,7 +80,7 @@ fn main {
     }
   }
   if diagrams.length() == 0 {
-    fail("no .excalidraw files in \{options.input}")
+    fail("no .excalidraw or .excalidraw.md files in \{options.input}")
     return
   }
   let result = @site.build_site(

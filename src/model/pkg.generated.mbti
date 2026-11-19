@@ -18,6 +18,7 @@ pub suberror ParseError {
   InvalidJson(String)
   NotAScene(String)
   InvalidElement(String, String)
+  InvalidMarkdown(String)
 }
 pub impl Show for ParseError
 
@@ -109,6 +110,7 @@ pub(all) struct Scene {
   export_background : Bool
   view_background_color : String
   files : Map[String, FileData]
+  notes : Array[String]
 }
 
 pub(all) struct TextData {

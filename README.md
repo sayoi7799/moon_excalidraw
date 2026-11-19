@@ -71,7 +71,7 @@ fn main {
     #|  {"type":"rectangle","id":"a","x":0,"y":0,"width":120,"height":60,"seed":1}
     #|]}
   let scene = @moon_excalidraw.parse_scene(text) catch {
-    // 非法 JSON、坏字段会 raise ParseError
+    // 也接受 Obsidian 的 .excalidraw.md；非法 JSON、坏字段会 raise ParseError
     err => {
       println("bad file: \{err}")
       return
@@ -96,6 +96,28 @@ fn main {
 
 对比页：`moon run --target js src/cmd/gallery -- gallery/index.html`，每个场景并排放本库和官方的输出（仓库里的 [gallery/index.html](gallery/index.html) 已经生成好，290 个场景）。图片里的文字用浏览器的回退字体，因为 `<img>` 里的 SVG 不能加载外部字体。
 
+### Obsidian 文件
+
+很多人在 Obsidian 的 Excalidraw 插件里画图，文件是 `.excalidraw.md`，不是纯 JSON。`excalidraw2svg`、`excalidraw2site` 和库里的 `parse_scene` 都直接接受这种文件，不用先转换：
+
+```bash
+moon run --target js src/cmd/excalidraw2svg -- note.excalidraw.md -o note.svg
+moon run --target js src/cmd/excalidraw2site -- vault-folder -o dist   # 文件夹里的 .excalidraw 和 .excalidraw.md 都会处理
+```
+
+文件的结构：Markdown 里 `## Drawing` 下面的围栏（` ```compressed-json `或 ` ```json `）就是图的数据，压缩用的是 [LZ-String](https://github.com/pieroxy/lz-string) 的 `compressToBase64`，每 256 个字符一段，段间空一行。文字元素存了两份：图的 JSON 里有 `text`，`## Text Elements` 里又有一份打字时的原文，每条后面跟 ` ^` 和 8 位元素 id。
+
+读取时的取舍：
+
+- **以图里保存的文字为准**，也就是你上次在 Obsidian 里看到的样子。插件打开文件时会用 `## Text Elements` 重新折行，折行要用浏览器的字体测量，这里做不到，所以只在图里的文字是空的时候才用 `## Text Elements` 补上，并给出一条警告。
+- 手动改过 `## Text Elements` 里的文字、和图里的不一致时，显示的仍是图里的，并给出一条警告（front matter 是 `excalidraw-plugin: parsed` 时两者本来就不同，不警告）。
+- 图片通常是 Obsidian 库里的文件，`## Embedded Files` 里只记路径，没有库就取不到，这些图片不会被画出来，警告里会写出它们的 `[[路径]]`。
+- LaTeX 公式和库里的其他嵌入内容同样取不到。
+
+测试：用插件的格式生成 19 个文件（压缩、不压缩、CRLF、单行、文字、库里的图片等），读出的 JSON 和原始场景逐字节相同，渲染结果和官方对原场景的导出逐字节相同；LZ-String 的压缩和解压对照 `lz-string` 1.5.0 逐字节一致。生成这些文件的脚本是 [scripts/cases_obsidian.mjs](scripts/cases_obsidian.mjs)。这些文件是按插件的文件格式写的，不是插件本身生成的。
+
+**许可证**：这里只参考了插件的**文件格式**，没有使用它的任何代码。插件仓库的 `LICENSE` 文件是 AGPL-3.0（`package.json` 里写的是 MIT，两者不一致），所以更是只看格式。LZ-String 是移植自 `lz-string`（MIT），不是插件的代码，版权声明在 [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES)。
+
 ### 把一个文件夹的图变成网页
 
 ```bash
@@ -116,8 +138,9 @@ moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o exampl
 | 导出：画布大小、10px padding、背景色、元素顺序、frame 裁剪和标题、`<a>` 链接 | 支持 |
 | 字体：`FontMode::Url`（官方取不到字体时的 `@font-face` URL 形式）、`FontMode::None`（对应 `skipInliningFonts`） | 支持 |
 | 容错：`isDeleted`、缺字段的旧文件（`strokeSharpness`、`font`、`boundElementIds`、`draw` 等）、未知字段 | 支持 |
+| Obsidian Excalidraw 插件的 `.excalidraw.md`（压缩的 `compressed-json` 和不压缩的 `json`，LF 或 CRLF） | 支持，见下面「Obsidian 文件」 |
 | embeddable、iframe、肘形箭头（elbowed）、未知元素类型 | 报错或跳过并警告，由调用方选择，**不会静默画错** |
-| 编辑和交互、PNG、协作、`.excalidrawlib`、Obsidian 压缩格式、深色模式、`exportEmbedScene`、导出单个 frame、字体子集化 | 不做 |
+| 编辑和交互、PNG、协作、`.excalidrawlib`、深色模式、`exportEmbedScene`、导出单个 frame、字体子集化 | 不做 |
 
 ## 和官方结果的差异
 
@@ -135,6 +158,8 @@ moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o exampl
 | 标题截断时把一个代理对切成两半 | 字符串里留下孤立代理项，保存成文件后是 U+FFFD | 直接输出 U+FFFD |
 | `Math.pow(x, 3)`（箭头标签位置用到） | V8 调用平台的 C 库，最后一位随平台变化 | 用正确舍入的立方；每次调用约有 0.04% 的概率和某个平台差最后一位 |
 | 画布里有一个 `1e12` 宽的 hachure 填充矩形 | 内存耗尽（要画几十亿条线） | 同样的问题，没有额外保护 |
+| Obsidian 文件里的文字 | 插件打开文件时用 `## Text Elements` 的原文，按浏览器的字体测量重新折行 | 用图里保存的 `text`，只在它是空的时候才用 `## Text Elements` 补上；两者不一致时警告 |
+| Obsidian 文件里的库内图片、公式 | 插件从库里读取 | 取不到，不画，警告里写出 `[[路径]]` |
 
 `FontMode::Url` 依赖官方包里的字体表（230 个字体文件及其 unicode-range）和 `containsCJK` 的字符集，字符集随生成 fixtures 的 Node 的 Unicode 版本而定。
 
@@ -152,7 +177,8 @@ moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o exampl
 | fonts | Font rules (`FontMode::Url`) for each family and character set | 185 | 185 | 0 |
 | combined | Diagrams (editor API, hand-made, random, and 3 drawn in the real editor) | 55 | 55 | 0 |
 | edge cases | Empty and degenerate scenes, extreme numbers, old formats, official errors | 65 | 65 | 0 |
-| **Total** | | **1197** | **1197** | **0** |
+| obsidian | Obsidian `.excalidraw.md` files (compressed, plain, CRLF, texts, vault images) against the official export of the scene inside | 19 | 19 | 0 |
+| **Total** | | **1216** | **1216** | **0** |
 
 | Lower-level check | Cases | Different |
 |---|---:|---:|
@@ -184,7 +210,8 @@ moon run --target js src/cmd/excalidraw2site -- examples/site/diagrams -o exampl
 | `freehand` | perfect-freehand 的 `getStroke`：先平滑输入点，再把笔迹向两侧偏移、加端帽，连成一个多边形 |
 | `text` | 字体 id 到字体名和度量的表、基线位置的公式、RTL 判断、官方 `@font-face` 规则的选择 |
 | `svg` | 一棵很小的 SVG 树，按 `outerHTML` 的规则序列化（属性顺序、转义） |
-| `model` | 读 JSON，丢掉已删除的元素，套用官方 `restore` 的规则补齐旧文件缺的字段 |
+| `model` | 读 JSON，丢掉已删除的元素，套用官方 `restore` 的规则补齐旧文件缺的字段；遇到 Obsidian 的 `.excalidraw.md` 就先交给 `obsidian` 取出场景 |
+| `obsidian` | 找到 `.excalidraw.md` 里的 `## Drawing`，解出 LZ-String 压缩的 JSON，并读出 `## Text Elements` 和 `## Embedded Files`；`lzstring.mbt` 是 `lz-string` 的 `compressToBase64` 和 `decompressFromBase64` |
 | `internal/jsnum` | `Math.hypot`、`atan2`、`parseFloat` 等 V8 行为，逐位对照 |
 
 一个容易忽略的细节：官方导出里，一个线性元素的“绝对坐标”取决于它的 rough 形状**有没有被生成过**（没生成过就用点估算，生成过就用真实曲线），所以导出结果依赖元素的绘制顺序。`shape.ShapeCache` 专门记录这个状态。
@@ -241,5 +268,7 @@ CI 见 [.github/workflows/check.yml](.github/workflows/check.yml)：在 Linux、
 - [@braintree/sanitize-url](https://github.com/braintree/sanitize-url)（MIT）：链接清理
 - [V8](https://github.com/v8/v8)（BSD-3-Clause，其中的 fdlibm 例程）：`Math.atan2`、`Math.hypot`
 - [roughjs](https://github.com/rough-stuff/rough)（MIT）：通过 moon_rough 使用
+- [lz-string](https://github.com/pieroxy/lz-string) 1.5.0（MIT）：`src/obsidian/lzstring.mbt` 是它 `compressToBase64` 和 `decompressFromBase64` 的移植，测试里的预期值由它生成
+- [Obsidian Excalidraw 插件](https://github.com/zsviczian/obsidian-excalidraw-plugin)：**只参考了 `.excalidraw.md` 的文件格式，没有使用它的代码**；仓库的 LICENSE 是 AGPL-3.0
 
 这个项目用到了 AI 工具辅助开发。所有预期值来自官方包的真实输出，不是 AI 生成的。

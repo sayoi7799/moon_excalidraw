@@ -25,7 +25,7 @@ for (const m of out.matchAll(/\[conformance\] suite=(.+?) total=(\d+) identical=
   rows.push({ suite, total: +total, identical: +identical, other: +structural + +attribute + +numeric, delta });
 }
 if (!rows.length) throw new Error("no conformance lines in the test output");
-const order = ["single basic", "single linear", "single text", "single misc", "fonts", "combined", "edge cases"];
+const order = ["single basic", "single linear", "single text", "single misc", "fonts", "combined", "edge cases", "obsidian"];
 rows.sort((a, b) => order.indexOf(a.suite) - order.indexOf(b.suite));
 const label = {
   "single basic": "Rectangles, diamonds, ellipses × fill, stroke, roughness, roundness",
@@ -35,6 +35,7 @@ const label = {
   fonts: "Font rules (`FontMode::Url`) for each family and character set",
   combined: "Diagrams (editor API, hand-made, random, and 3 drawn in the real editor)",
   "edge cases": "Empty and degenerate scenes, extreme numbers, old formats, official errors",
+  obsidian: "Obsidian `.excalidraw.md` files (compressed, plain, CRLF, texts, vault images) against the official export of the scene inside",
 };
 const lines = [
   "| Suite | What it covers | Scenes | Byte-identical | Different |",
