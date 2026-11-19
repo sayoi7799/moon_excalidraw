@@ -8,7 +8,7 @@ All notable changes to this project are written here. The format follows
 
 Nothing yet.
 
-## [0.1.0] - 2026-11-17
+## [0.1.0] - 2026-11-19
 
 First version. It renders Excalidraw files to the SVG that Excalidraw 0.18.1's
 `exportToSvg` produces, byte for byte, without a browser.
