@@ -77,6 +77,15 @@ const suites = {
     writeGen("src/internal/conform/json_doubles_gen_test.mbt", strArray("json_doubles", lines, { pub: false }));
   },
 
+  async lzstring() {
+    const { lzCases } = await import("./cases_lz.mjs");
+    const items = lzCases().map((c) => `  (${str(c.name)}, ${str(c.input)}, ${str(c.compressed)}),`);
+    writeGen(
+      "src/obsidian/lzstring_gen_test.mbt",
+      `///|\nlet lz_cases : Array[(String, String, String)] = [\n${items.join("\n")}\n]\n`,
+    );
+  },
+
   async freehand() {
     const { freehandCases } = await import("./cases_freehand.mjs");
     writeGen("src/internal/fixtures/freehand_gen.mbt", strArray("freehand_cases", freehandCases()));
