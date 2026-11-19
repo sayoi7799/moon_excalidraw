@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>moon_excalidraw demo</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --panel: #ffffff;
+    --text: #1e1e1e;
+    --muted: #6b6b66;
+    --line: #dcdcd4;
+    --accent: #3b5bdb;
+    --ok: #2b8a3e;
+    --ok-bg: #ebfbee;
+    --bad: #c92a2a;
+    --bad-bg: #fff5f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17171a;
+      --panel: #202024;
+      --text: #ececea;
+      --muted: #9a9a94;
+      --line: #35353a;
+      --accent: #91a7ff;
+      --ok: #69db7c;
+      --ok-bg: #12261a;
+      --bad: #ff8787;
+      --bad-bg: #2a1616;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .lead { color: var(--muted); margin: 0 0 20px; max-width: 70ch; }
+  a { color: var(--accent); }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+  .bar button, .bar label.file {
+    font: inherit; color: var(--text); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer;
+  }
+  .bar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .bar input[type="file"] { display: none; }
+  .drop {
+    border: 2px dashed var(--line); border-radius: 8px; padding: 10px 14px;
+    color: var(--muted); margin-bottom: 16px; text-align: center;
+  }
+  .drop.over { border-color: var(--accent); color: var(--accent); }
+  #verdict {
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-weight: 600;
+    border: 1px solid var(--line); background: var(--panel);
+  }
+  #verdict.ok { color: var(--ok); background: var(--ok-bg); border-color: var(--ok); }
+  #verdict.bad { color: var(--bad); background: var(--bad-bg); border-color: var(--bad); }
+  #verdict small { display: block; font-weight: 400; color: var(--muted); margin-top: 2px; }
+  .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .panes { grid-template-columns: 1fr; } }
+  .pane { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; min-width: 0; }
+  .pane h2 { font-size: 14px; margin: 0 0 8px; }
+  .pane h2 span { color: var(--muted); font-weight: 400; }
+  .view {
+    min-height: 220px; display: flex; align-items: center; justify-content: center;
+    background: #fff; border: 1px solid var(--line); border-radius: 6px; overflow: auto;
+  }
+  .view img { max-width: 100%; height: auto; display: block; }
+  .view .msg { color: #6b6b66; padding: 16px; text-align: center; }
+  .meta { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  pre {
+    background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 8px; max-height: 240px; overflow: auto; font-size: 12px; white-space: pre-wrap; word-break: break-all;
+  }
+  .notes { margin-top: 24px; color: var(--muted); font-size: 13px; max-width: 80ch; }
+  .notes li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>moon_excalidraw</h1>
+  <p class="lead">
+    A MoonBit renderer for Excalidraw files. Left: this library, compiled to JavaScript.
+    Right: the official <code>exportToSvg</code> from <code>@excalidraw/excalidraw</code> 0.18.1.
+    The page checks whether the two SVGs are the same, byte for byte.
+    <a href="https://github.com/sayoi7799/moon_excalidraw">Source on GitHub</a>.
+  </p>
+
+  <div class="bar" id="examples" aria-label="Examples"></div>
+  <div class="bar">
+    <label class="file">Choose a .excalidraw file<input id="file" type="file" accept=".excalidraw,.json,application/json" /></label>
+  </div>
+  <div class="drop" id="drop">or drop a .excalidraw file here</div>
+
+  <div id="verdict" role="status">Loading…</div>
+
+  <div class="panes">
+    <section class="pane">
+      <h2>moon_excalidraw <span>(MoonBit, compiled to JS)</span></h2>
+      <div class="view" id="ours-view"></div>
+      <div class="meta" id="ours-meta"></div>
+      <details><summary>SVG source</summary><pre id="ours-src"></pre></details>
+    </section>
+    <section class="pane">
+      <h2>Excalidraw <span>(official exportToSvg 0.18.1)</span></h2>
+      <div class="view" id="official-view"></div>
+      <div class="meta" id="official-meta"></div>
+      <details><summary>SVG source</summary><pre id="official-src"></pre></details>
+    </section>
+  </div>
+
+  <ul class="notes">
+    <li>The left side only calls the compiled MoonBit module (<code>moon_excalidraw.js</code>). The official package is loaded separately and only draws the right side.</li>
+    <li>Both sides are asked for SVG without embedded fonts, because the official export inlines fonts as base64, which this library does not copy. Text in the previews uses your browser's fallback font.</li>
+    <li>Both sides measure text with the same fixed width (7 px per character, the metric the test suite uses). It only matters for frame titles, the one thing the export measures itself.</li>
+    <li>Everything runs in your browser. Files you choose are not uploaded.</li>
+  </ul>
+</main>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -6,7 +6,7 @@ priv enum Content {
   Element(
     tag~ : String,
     attrs~ : Array[(String, String)],
-    children~ : Array[Node]
+    children~ : Array[Node],
   )
   Text(String)
   Comment(String)

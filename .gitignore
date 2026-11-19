@@ -9,3 +9,4 @@ scripts/.cache/
 moon.work
 examples/site/dist/
 examples/site/dist*/
+demo-dist/

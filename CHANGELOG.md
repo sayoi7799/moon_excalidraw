@@ -37,6 +37,11 @@ First version. It renders Excalidraw files to the SVG that Excalidraw 0.18.1's
   (`index.html`, one SVG per diagram, a copy of each source). One bad file does not stop
   the others; the command then exits with a non-zero code. The `site` package holds the
   logic as `build_site`.
+- A demo page (`demo/`, published to GitHub Pages by `.github/workflows/pages.yml`) that
+  renders a dropped file with this library compiled to JavaScript and with the official
+  `exportToSvg` side by side, and says whether the two SVGs are byte for byte the same.
+  The `web` package exports `render` to JavaScript for it, and `scripts/demo_check.mjs`
+  checks the same module against the official export in CI.
 - `examples/site`: four sample diagrams and a ready-to-copy GitHub Pages workflow that
   rebuilds the site on every push.
 - Tests that compare with the official package: 1197 scenes, 322 freehand strokes, 50

@@ -8,6 +8,10 @@ Excalidraw 是最流行的手绘风格白板，`.excalidraw` 文件是 JSON：�
 $ excalidraw2svg diagram.excalidraw -o diagram.svg
 ```
 
+**在线演示：<https://sayoi7799.github.io/moon_excalidraw/>**。拖入一个 `.excalidraw` 文件，页面左边是本库（编译成 JS）渲染的 SVG，右边是官方 `exportToSvg` 渲染的，并告诉你两边是不是逐字节一致。页面里还内置了几张示例图，打开就能看。
+
+[![本库和官方 exportToSvg 并排渲染同一张图，页面显示两个 SVG 逐字节一致](https://raw.githubusercontent.com/sayoi7799/moon_excalidraw/main/docs/demo.jpg)](https://sayoi7799.github.io/moon_excalidraw/)
+
 > English: a MoonBit renderer for Excalidraw files. It reads `.excalidraw` JSON and writes the same SVG as Excalidraw 0.18.1's `exportToSvg`, byte for byte, without a browser. All expected outputs come from the pinned official package.
 
 ## 和其他项目的关系
@@ -206,6 +210,17 @@ node scripts/update_readme_stats.mjs
 fixtures 的来源：`scripts/package-lock.json` 锁定 `@excalidraw/excalidraw` **0.18.1**、`perfect-freehand` **1.2.0**，并检查 `roughjs` 是 4.6.4、`points-on-curve` 是 1.0.1（官方 0.18.1 依赖的版本）。`scripts/official_env.mjs` 用 esbuild 打包官方发布的 bundle，在 jsdom 里运行，并补上 canvas、`FontFace`、`Path2D` 等几个桩。wasm-gc 后端读不了文件，所以生成的 fixtures 是内嵌在 `src/internal/fixtures/` 里的 `.mbt` 文件。生成过程是可复现的：连续生成两次得到完全相同的文件。
 
 验证过 jsdom 的输出和真实 Chromium 一致：21 个覆盖所有元素类型的场景逐字节相同（`scripts/browser_check.mjs`）。
+
+演示页的源码在 [demo/](demo/)：`src/web` 把 `render` 函数导出成 JavaScript，页面的左边只调用它；官方包只画右边，页面里是分开加载的。本地构建和查看：
+
+```bash
+moon build --target js --release
+cd scripts && npm ci
+node build_demo.mjs            # 写到 demo-dist/
+node serve.mjs ../demo-dist 4176
+```
+
+`node scripts/demo_check.mjs` 用同一份 js 对示例图和真实编辑器画的图逐字节对照官方输出，CI 里会跑。页面对照时两边都不带字体、都用每字符 7px 的文字宽度（和测试一致），只影响 frame 标题。推送到 `main` 时 [.github/workflows/pages.yml](.github/workflows/pages.yml) 会把页面发布到 GitHub Pages（仓库设置里 Pages 的 Source 要选 GitHub Actions）。
 
 CI 见 [.github/workflows/check.yml](.github/workflows/check.yml)：在 Linux、macOS、Windows 上跑 `moon check --deny-warn`、`moon build`、`moon test`（都带 `--target all`）、`moon fmt --check`，再确认 `moon info` 之后 `git diff` 为空；另有一个 job 安装 Node，重新生成 fixtures 并要求和仓库里的完全一致，同时检查 README 的对照表。Node 版本固定在 [scripts/.nvmrc](scripts/.nvmrc)（24.20.0），因为 `containsCJK` 的字符集随 Node 的 Unicode 版本而定。
 
