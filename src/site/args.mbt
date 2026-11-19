@@ -24,7 +24,7 @@ pub(all) struct SiteOptions {
 
 ///|
 pub fn usage() -> String {
-  "Usage: excalidraw2site <folder> [options]\n\nRenders every .excalidraw file in <folder> and writes a web page that shows them all.\n\nOptions:\n  -o, --output <dir>  Where to write the site (default: dist)\n  --title <text>      The page title (default: Diagrams)\n  --no-fonts          Leave the font rules out of the SVG files\n  -h, --help          Show this help\n\nThe site is index.html, an svg/ folder with one SVG per diagram, and a src/\nfolder with a copy of each .excalidraw file. Files that can't be rendered are\nlisted on the page and make the command exit with an error."
+  "Usage: excalidraw2site <folder> [options]\n\nRenders every .excalidraw and .excalidraw.md (Obsidian) file in <folder> and writes a\nweb page that shows them all.\n\nOptions:\n  -o, --output <dir>  Where to write the site (default: dist)\n  --title <text>      The page title (default: Diagrams)\n  --no-fonts          Leave the font rules out of the SVG files\n  -h, --help          Show this help\n\nThe site is index.html, an svg/ folder with one SVG per diagram, and a src/\nfolder with a copy of each source file. Files that can't be rendered are\nlisted on the page and make the command exit with an error."
 }
 
 ///|

@@ -151,3 +151,34 @@ test "bad usage exits with code 2 and shows the usage" {
   assert_eq(r.code, 2)
   assert_true(r.stderr.contains("Usage"))
 }
+
+///|
+fn obsidian_flowchart() -> @fixtures.SceneCase {
+  for c in @fixtures.obsidian {
+    if c.name == "flowchart" {
+      return c
+    }
+  }
+  abort("no flowchart fixture")
+}
+
+///|
+test "an Obsidian .excalidraw.md file converts to the official SVG" {
+  let c = obsidian_flowchart()
+  let r = run(
+    ["note.excalidraw.md", "--no-fonts"],
+    { "note.excalidraw.md": c.input },
+    {},
+  )
+  assert_eq(r.code, 0)
+  assert_eq(r.stderr, "")
+  assert_eq(r.stdout, c.expected.unwrap())
+}
+
+///|
+test "a damaged Obsidian file fails with a message" {
+  let damaged = "---\nexcalidraw-plugin: raw\n---\n# Excalidraw Data\n"
+  let r = run(["note.excalidraw.md"], { "note.excalidraw.md": damaged }, {})
+  assert_eq(r.code, 1)
+  assert_true(r.stderr.contains("Obsidian file can't be read"))
+}

@@ -156,3 +156,36 @@ test "no diagrams still gives a page that says so" {
   assert_true(content_of(r, "index.html").contains("No diagrams"))
   assert_eq(r.failures.length(), 0)
 }
+
+///|
+test "an Obsidian file gives a page card, an svg and a copy of the source" {
+  let note = for c in @fixtures.obsidian {
+    if c.name == "flowchart" {
+      break c
+    }
+  } nobreak {
+    abort("no flowchart fixture")
+  }
+  let r = @site.build_site(
+    [{ name: "flowchart.excalidraw.md", source: note.input, }],
+    fonts=None,
+  )
+  assert_eq(r.failures.length(), 0)
+  assert_true(paths(r).contains("svg/flowchart.svg"))
+  assert_true(paths(r).contains("src/flowchart.excalidraw.md"))
+  assert_eq(content_of(r, "src/flowchart.excalidraw.md"), note.input)
+  // The same SVG the official export gives for the scene inside.
+  assert_eq(content_of(r, "svg/flowchart.svg"), note.expected.unwrap())
+  assert_true(content_of(r, "index.html").contains(">.excalidraw.md</a>"))
+}
+
+///|
+test "a damaged Obsidian file is listed as a failure" {
+  let r = @site.build_site(
+    [{ name: "n.excalidraw.md", source: "# Excalidraw Data\n", }],
+    fonts=None,
+  )
+  assert_eq(r.failures.length(), 1)
+  assert_eq(r.failures[0].name, "n.excalidraw.md")
+  assert_true(r.failures[0].message.contains("Obsidian file can't be read"))
+}
