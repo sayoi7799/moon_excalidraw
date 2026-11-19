@@ -24,15 +24,13 @@ fn failure(message : String) -> String {
 /// `{"ok":true,"svg":...,"warnings":[...]}` or `{"ok":false,"error":...}`.
 pub fn render(text : String, fonts : String) -> String {
   let mode : @export.FontMode = if fonts == "url" { Url } else { None }
-  let scene = @model.parse_scene(text) catch {
-    err => return failure(err.to_string())
-  }
+  let scene = @model.parse_scene(text) catch { err => return failure("\{err}") }
   let result = @export.export_to_svg(
     scene,
     fonts=mode,
     measure_text=fixed_width,
   ) catch {
-    err => return failure(err.to_string())
+    err => return failure("\{err}")
   }
   let warnings = result.warnings.map(fn(w) { Json::string(w.message) })
   Json::object({
